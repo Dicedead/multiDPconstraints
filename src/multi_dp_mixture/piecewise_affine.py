@@ -16,7 +16,8 @@ class PiecewiseAffine:
             slopes: Array,
             intercepts: Array,
             domain_start: float = DEFAULT_DOMAIN_START,
-            domain_end: float = DEFAULT_DOMAIN_END
+            domain_end: float = DEFAULT_DOMAIN_END,
+            bounded: bool = False
     ):
         """
         Initializes the PiecewiseAffine object with slopes and intercepts.
@@ -61,6 +62,7 @@ class PiecewiseAffine:
 
         self._domain_start = domain_start
         self._domain_end = domain_end
+        self._bounded_domain = bounded
 
     def __call__(self, x: np.ndarray) -> np.ndarray:
         """
@@ -76,7 +78,30 @@ class PiecewiseAffine:
         return np.max(max_input, axis=-1)
 
     def convex_conjugate(self) -> 'PiecewiseAffine':
-        ## todo this does not work when f has a bounded domain
+        if self._bounded_domain:
+            x_breakpoints = list(self._slopes.copy())
+            x_breakpoints.extend([self._domain_start, self._domain_end])
+            x_breakpoints = np.array(x_breakpoints)
+            # y_breakpoints = self(x_breakpoints)
+
+            y_breakpoints = list(-self._intercepts.copy())
+            y_breakpoints.extend([self(np.r_[self._domain_start])[0], self(np.r_[self._domain_end])[0]])
+            y_breakpoints = np.array(y_breakpoints)
+
+            x_breakpoints = x_breakpoints.reshape(1, -1)
+            y_breakpoints = y_breakpoints.reshape(1, -1)
+
+            class CallOnlyPiecewiseAffine(PiecewiseAffine):
+                def __init__(self):
+                    super().__init__([0], [0], bounded=False)
+
+                def __call__(self, x: np.ndarray) -> np.ndarray:
+                    x = x.reshape(-1, 1)
+                    candidates = x_breakpoints * x - y_breakpoints
+                    return np.max(candidates, axis=-1)
+
+            return CallOnlyPiecewiseAffine()
+
         pairs = list(zip(self._slopes, self._intercepts))
         pairs.sort(key=lambda pair: pair[0])
         sorted_slopes, sorted_intercepts = list(zip(*pairs))  # unzips the list of pairs into two lists
@@ -100,7 +125,8 @@ class PiecewiseAffine:
             new_slopes,
             new_intercepts,
             sorted_slopes[0],
-            sorted_slopes[-1]
+            sorted_slopes[-1],
+            not self._bounded_domain
         )
 
     def __add__(self, other: 'PiecewiseAffine') -> 'PiecewiseAffine':
@@ -118,7 +144,8 @@ class PiecewiseAffine:
             new_slopes,
             new_intercepts,
             max(self._domain_start, other._domain_start),
-            min(self._domain_end, other._domain_end)
+            min(self._domain_end, other._domain_end),
+            self._bounded_domain or other._bounded_domain
         )
 
     def __mul__(self, other: float) -> 'PiecewiseAffine':
@@ -126,7 +153,8 @@ class PiecewiseAffine:
             other * self._slopes,
             other * self._intercepts,
             self._domain_start,
-            self._domain_end
+            self._domain_end,
+            self._bounded_domain
         )
 
     def __rmul__(self, other: float) -> 'PiecewiseAffine':

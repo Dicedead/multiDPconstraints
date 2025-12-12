@@ -18,7 +18,9 @@ def convex_conj_test():
     f.convex_conjugate().to_plot()
 
 def double_convex_conj_is_identity_test():
-    f = SingleEpsDeltaTradeoff(0.6, 0.5)
+    eps_s = [0.8, 0.25]
+    delta_s = [0.1, 0.2]
+    f = MultiEpsDeltaTradeoff(eps_s, delta_s)
     f.to_plot()
     f_double_conj = f.convex_conjugate().convex_conjugate()
     f_double_conj.to_plot()
