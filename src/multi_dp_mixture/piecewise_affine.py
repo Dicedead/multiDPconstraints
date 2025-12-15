@@ -128,14 +128,14 @@ class PiecewiseAffine:
         )
 
     def __add__(self, other: 'PiecewiseAffine') -> 'PiecewiseAffine':
-        new_slopes = np.zeros(len(self._slopes) + len(other._slopes))
-        new_intercepts = np.zeros(len(self._intercepts) + len(other._intercepts))
+        new_slopes = []
+        new_intercepts = []
 
         i = 0
         for self_slope, self_intercept in zip(self._slopes, self._intercepts):
             for other_slope, other_intercept in zip(other._slopes, other._intercepts):
-                new_slopes[i] = self_slope + other_slope
-                new_intercepts[i] = self_intercept + other_intercept
+                new_slopes.append(self_slope + other_slope)
+                new_intercepts.append(self_intercept + other_intercept)
                 i += 1
 
         return PiecewiseAffine(
@@ -175,11 +175,12 @@ class PiecewiseAffine:
     @staticmethod
     def weighted_infimal_convolution(weights: Array, f_arr: List['PiecewiseAffine']) -> 'PiecewiseAffine':
         assert len(weights) == len(f_arr)
-        f_star = weights[0] * f_arr[0].convex_conjugate()
+        f_star = weights[0] * (f_arr[0].convex_conjugate())
         for i in range(1, len(weights)):
-            f_star += weights[i] * f_arr[i].convex_conjugate()
-        return f_star.convex_conjugate()
-
+            f_star = f_star +  (weights[i] * (f_arr[i].convex_conjugate()))
+        f_star.to_plot()
+        f_mixture = f_star.convex_conjugate()
+        return f_mixture
 
 
 IDENTITY = PiecewiseAffine([ 1], [0])
