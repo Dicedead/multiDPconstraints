@@ -1,7 +1,4 @@
-import numpy as np
-
 from src.definitions import *
-
 
 class PiecewiseAffine:
     """
@@ -43,13 +40,15 @@ class PiecewiseAffine:
             new_intercepts = []
 
             for first_slope, first_intercept in zip(slopes, intercepts):
+                keep_pair = True
                 for second_slope, second_intercept in zip(slopes, intercepts):
                     if first_slope != second_slope or first_intercept != second_intercept:
                         if first_pair_is_lower(first_slope, first_intercept, second_slope, second_intercept):
-                            break
+                            keep_pair = False
 
-                new_slopes.append(first_slope)
-                new_intercepts.append(first_intercept)
+                if keep_pair:
+                    new_slopes.append(first_slope)
+                    new_intercepts.append(first_intercept)
             return new_slopes, new_intercepts
 
         kept_slopes, kept_intercepts = keep_only_useful_pairs()
@@ -79,28 +78,27 @@ class PiecewiseAffine:
 
     def convex_conjugate(self) -> 'PiecewiseAffine':
         if self._bounded_domain:
-            x_breakpoints = list(self._slopes.copy())
-            x_breakpoints.extend([self._domain_start, self._domain_end])
-            x_breakpoints = np.array(x_breakpoints)
-            # y_breakpoints = self(x_breakpoints)
+            breakpoints = [self._domain_start, self._domain_end]
+            for i in range(len(self._slopes)-1):
+                offset_ip1 = self._intercepts[i+1]
+                offset_i = self._intercepts[i]
+                slope_ip1 = self._slopes[i+1]
+                slope_i = self._slopes[i]
 
-            y_breakpoints = list(-self._intercepts.copy())
-            y_breakpoints.extend([self(np.r_[self._domain_start])[0], self(np.r_[self._domain_end])[0]])
-            y_breakpoints = np.array(y_breakpoints)
+                t_i = -(offset_ip1 - offset_i) / (slope_ip1 - slope_i)
+                breakpoints.append(t_i)
 
-            x_breakpoints = x_breakpoints.reshape(1, -1)
-            y_breakpoints = y_breakpoints.reshape(1, -1)
+            new_intercepts = np.zeros(len(breakpoints))
+            for idx, t_i in enumerate(breakpoints):
+                new_intercepts[idx] = -self(np.r_[t_i])
 
-            class CallOnlyPiecewiseAffine(PiecewiseAffine):
-                def __init__(self):
-                    super().__init__([0], [0], bounded=False)
-
-                def __call__(self, x: np.ndarray) -> np.ndarray:
-                    x = x.reshape(-1, 1)
-                    candidates = x_breakpoints * x - y_breakpoints
-                    return np.max(candidates, axis=-1)
-
-            return CallOnlyPiecewiseAffine()
+            return PiecewiseAffine(
+                breakpoints,
+                new_intercepts,
+                domain_start=DEFAULT_DOMAIN_START,
+                domain_end=DEFAULT_DOMAIN_END,
+                bounded=False
+            )
 
         pairs = list(zip(self._slopes, self._intercepts))
         pairs.sort(key=lambda pair: pair[0])
@@ -173,6 +171,15 @@ class PiecewiseAffine:
             ax.set_autoscale_on(False)
 
         plt.show()
+
+    @staticmethod
+    def weighted_infimal_convolution(weights: Array, f_arr: List['PiecewiseAffine']) -> 'PiecewiseAffine':
+        assert len(weights) == len(f_arr)
+        f_star = weights[0] * f_arr[0].convex_conjugate()
+        for i in range(1, len(weights)):
+            f_star += weights[i] * f_arr[i].convex_conjugate()
+        return f_star.convex_conjugate()
+
 
 
 IDENTITY = PiecewiseAffine([ 1], [0])

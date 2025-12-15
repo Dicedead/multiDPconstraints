@@ -1,4 +1,5 @@
-from multi_dp_mixture.piecewise_affine import *
+from multi_dp_mixture.piecewise_affine import PiecewiseAffine
+from definitions import *
 
 class MultiEpsDeltaTradeoff(PiecewiseAffine):
     def __init__(self, eps_ls: Array, delta_ls: Array):
@@ -24,7 +25,7 @@ class MultiEpsDeltaTradeoff(PiecewiseAffine):
         slopes = np.concatenate([initial_slopes, inverse_slopes])
         intercepts = np.concatenate([initial_intercepts, inverse_intercepts])
 
-        super().__init__(slopes, intercepts)
+        super().__init__(slopes, intercepts, domain_start=0, domain_end=1, bounded=False)
 
 
 class SingleEpsDeltaTradeoff(MultiEpsDeltaTradeoff):
