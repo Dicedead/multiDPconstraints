@@ -77,6 +77,17 @@ class PiecewiseAffine:
         return np.max(max_input, axis=-1)
 
     def convex_conjugate(self) -> 'PiecewiseAffine':
+        """
+        Computes the convex conjugate of the current piecewise affine function.
+
+        The convex conjugate of a function f is the function defined as:
+        f*(y) = sup_x(y * x - f(x)), where sup represents the supremum.
+
+        This method computes the convex conjugate for piecewise affine functions. The
+        result is also a piecewise affine function.
+
+        :return: A new instance of `PiecewiseAffine` representing the convex conjugate.
+        """
         if self._bounded_domain:
             breakpoints = [self._domain_start, self._domain_end]
             for i in range(len(self._slopes)-1):
@@ -128,6 +139,17 @@ class PiecewiseAffine:
         )
 
     def __add__(self, other: 'PiecewiseAffine') -> 'PiecewiseAffine':
+        """
+        Performs addition of two `PiecewiseAffine` objects. The resulting object is a new
+        instance with the slopes and intercepts added pairwise. The domain of the
+        resulting object is defined based on the domains of the input objects.
+
+        :param other: The `PiecewiseAffine` instance to add to `self`
+        :type other: PiecewiseAffine
+
+        :return: A new `PiecewiseAffine` object resulting from the addition operation
+        :rtype: PiecewiseAffine
+        """
         new_slopes = []
         new_intercepts = []
 
@@ -147,6 +169,17 @@ class PiecewiseAffine:
         )
 
     def __mul__(self, other: float) -> 'PiecewiseAffine':
+        """
+        Multiplies the current PiecewiseAffine instance by a scalar value. This operation
+        scales the slopes and intercepts of the affine segments by the given scalar while
+        preserving the domain.
+
+        :param other: A scalar value to multiply the slopes and intercepts with.
+        :type other: float
+        :return: A new PiecewiseAffine instance where the slopes and intercepts are scaled
+            by the given scalar.
+        :rtype: PiecewiseAffine
+        """
         return PiecewiseAffine(
             other * self._slopes,
             other * self._intercepts,
@@ -159,6 +192,13 @@ class PiecewiseAffine:
         return self.__mul__(other)
 
     def to_plot(self, num_points=100):
+        """
+        Generates and displays a plot for the given function over its domain.
+
+        :param num_points: The number of points to use for the domain discretization.
+        :type num_points: int
+        :return: None
+        """
         x = np.linspace(self._domain_start, self._domain_end, num_points)
         fig = plt.figure()
         ax = fig.add_subplot()
@@ -174,6 +214,16 @@ class PiecewiseAffine:
 
     @staticmethod
     def weighted_infimal_convolution(weights: Array, f_arr: List['PiecewiseAffine']) -> 'PiecewiseAffine':
+        """
+        Computes the weighted infimal convolution of a list of PiecewiseAffine functions,
+        given their corresponding weights.
+
+        :param weights: Array containing the weights for the infimal convolution operation.
+        :param f_arr: List of PiecewiseAffine objects on which the weighted infimal
+            convolution is to be performed.
+        :return: Resulting PiecewiseAffine function after performing the weighted
+            infimal convolution.
+        """
         assert len(weights) == len(f_arr)
 
         f_star = weights[0] * (f_arr[0].convex_conjugate())
@@ -185,6 +235,22 @@ class PiecewiseAffine:
 
     @staticmethod
     def plot_multiple_functions(f_arr: List['PiecewiseAffine'], labels: List[str], num_points=100):
+        """
+        Plots multiple functions on the same graph, providing a visual comparison
+        between a list of given function objects and their respective labels.
+
+        :param f_arr: A list of PiecewiseAffine objects, where each object represents
+                      a function to be plotted.
+        :type f_arr: List[PiecewiseAffine]
+        :param labels: A list of labels corresponding to each function in f_arr,
+                       which will be used for the plot's legend.
+        :type labels: List[str]
+        :param num_points: The granularity of the plot, specifying the number of
+                           sample points to generate within the range [0, 1].
+                           Defaults to 100.
+        :type num_points: int, optional
+        :return: None
+        """
         assert len(f_arr) == len(labels)
 
         x = np.linspace(0,1, num_points)

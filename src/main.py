@@ -34,8 +34,7 @@ def first_addition_test():
     f1 = SingleEpsDeltaTradeoff(0.5, 0.0)
     f2 = SingleEpsDeltaTradeoff(0.5, 0.4)
     f = PiecewiseAffine.weighted_infimal_convolution([alpha_1, alpha_2], [f1, f2])
-    f1.to_plot()
-    f2.to_plot()
-    f.to_plot()
+    
+    PiecewiseAffine.plot_multiple_functions([f1, f2, f], ["f1", "f2", "f"])
 
 first_addition_test()
