@@ -175,12 +175,32 @@ class PiecewiseAffine:
     @staticmethod
     def weighted_infimal_convolution(weights: Array, f_arr: List['PiecewiseAffine']) -> 'PiecewiseAffine':
         assert len(weights) == len(f_arr)
+
         f_star = weights[0] * (f_arr[0].convex_conjugate())
         for i in range(1, len(weights)):
             f_star = f_star +  (weights[i] * (f_arr[i].convex_conjugate()))
         f_star.to_plot()
         f_mixture = f_star.convex_conjugate()
         return f_mixture
+
+    @staticmethod
+    def plot_multiple_functions(f_arr: List['PiecewiseAffine'], labels: List[str], num_points=100):
+        assert len(f_arr) == len(labels)
+
+        x = np.linspace(0,1, num_points)
+        fig = plt.figure()
+        ax = fig.add_subplot()
+        for f, label in zip(f_arr, labels):
+            plt.plot(x, f(x), label=label)
+
+
+        plt.plot(x, IDENTITY(x), "k--")
+        plt.plot(x, DIAGONAL(x), "k--")
+        plt.legend()
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_autoscale_on(False)
+
+        plt.show()
 
 
 IDENTITY = PiecewiseAffine([ 1], [0])
