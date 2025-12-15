@@ -25,7 +25,7 @@ class MultiEpsDeltaTradeoff(PiecewiseAffine):
         slopes = np.concatenate([initial_slopes, inverse_slopes])
         intercepts = np.concatenate([initial_intercepts, inverse_intercepts])
 
-        super().__init__(slopes, intercepts, domain_start=0, domain_end=1, bounded=False)
+        super().__init__(slopes, intercepts, domain_start=0., domain_end=1., bounded=True)
 
 
 class SingleEpsDeltaTradeoff(MultiEpsDeltaTradeoff):

@@ -24,17 +24,17 @@ def double_convex_conj_is_identity_test():
     f = MultiEpsDeltaTradeoff(eps_s, delta_s)
     f.to_plot()
     f_conj = f.convex_conjugate()
-    f_conj.to_plot()
-    f_double_conj = f.convex_conjugate().convex_conjugate()
+    f_double_conj = f_conj.convex_conjugate()
     f_double_conj.to_plot()
 
 def first_addition_test():
-    alpha_1 = 0.3
+    alpha_1 = 0.5
     alpha_2 = 1 - alpha_1
-    f1 = SingleEpsDeltaTradeoff(0.5, 0.0)
-    f2 = SingleEpsDeltaTradeoff(0.5, 0.4)
+    f1 = SingleEpsDeltaTradeoff(0.8, 0.1)
+    f2 = SingleEpsDeltaTradeoff(0.25, 0.2)
     f = PiecewiseAffine.weighted_infimal_convolution([alpha_1, alpha_2], [f1, f2])
     
     PiecewiseAffine.plot_multiple_functions([f1, f2, f], ["f1", "f2", "f"])
 
 first_addition_test()
+# double_convex_conj_is_identity_test()

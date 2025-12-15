@@ -1,3 +1,5 @@
+import numpy as np
+
 from src.definitions import *
 
 class PiecewiseAffine:
@@ -31,6 +33,11 @@ class PiecewiseAffine:
         """
 
         def first_pair_is_lower(a1, b1, a2, b2):
+            if not bounded:
+                if a1 == a2:
+                    return b1 <= b2
+                return False
+
             if a1 <= a2:
                 return a1 * domain_start + b1 <= a2 * domain_start + b2
             return a1 * domain_end + b1 <= a2 * domain_end + b2
@@ -49,9 +56,25 @@ class PiecewiseAffine:
                 if keep_pair:
                     new_slopes.append(first_slope)
                     new_intercepts.append(first_intercept)
+
             return new_slopes, new_intercepts
 
+        def keep_only_unique_pairs(sorted_slope_and_offset_pairs):
+            unique_pairs = []
+            for slope, offset in sorted_slope_and_offset_pairs:
+                if (slope, offset) not in unique_pairs:
+                    unique_pairs.append((slope, offset))
+
+            return unique_pairs
+
         kept_slopes, kept_intercepts = keep_only_useful_pairs()
+
+        pairs = list(zip(kept_slopes, kept_intercepts))
+        pairs.sort(key=lambda pair: pair[0])
+
+        pairs = keep_only_unique_pairs(pairs)
+
+        kept_slopes, kept_intercepts = list(zip(*pairs))  # unzips the list of pairs into two lists
 
         self._slopes = np.array(kept_slopes)
         self._inner_slopes = self._slopes.reshape(1, -1)
@@ -90,53 +113,32 @@ class PiecewiseAffine:
         """
         if self._bounded_domain:
             breakpoints = [self._domain_start, self._domain_end]
-            for i in range(len(self._slopes)-1):
-                offset_ip1 = self._intercepts[i+1]
-                offset_i = self._intercepts[i]
-                slope_ip1 = self._slopes[i+1]
-                slope_i = self._slopes[i]
+        else:
+            breakpoints = []
 
-                t_i = -(offset_ip1 - offset_i) / (slope_ip1 - slope_i)
-                breakpoints.append(t_i)
+        for i in range(len(self._slopes)-1):
+            offset_ip1 = self._intercepts[i+1]
+            offset_i = self._intercepts[i]
+            slope_ip1 = self._slopes[i+1]
+            slope_i = self._slopes[i]
 
-            new_intercepts = np.zeros(len(breakpoints))
-            for idx, t_i in enumerate(breakpoints):
-                new_intercepts[idx] = -self(np.r_[t_i])
+            t_i = -(offset_ip1 - offset_i) / (slope_ip1 - slope_i)
+            breakpoints.append(t_i)
 
-            return PiecewiseAffine(
-                breakpoints,
-                new_intercepts,
-                domain_start=DEFAULT_DOMAIN_START,
-                domain_end=DEFAULT_DOMAIN_END,
-                bounded=False
-            )
+        new_intercepts = np.zeros(len(breakpoints))
+        for idx, t_i in enumerate(breakpoints):
+            new_intercepts[idx] = -self(np.r_[t_i])
 
-        pairs = list(zip(self._slopes, self._intercepts))
-        pairs.sort(key=lambda pair: pair[0])
-        sorted_slopes, sorted_intercepts = list(zip(*pairs))  # unzips the list of pairs into two lists
-
-        new_slopes = np.zeros(len(sorted_slopes)-1)
-        new_intercepts = np.zeros(len(sorted_slopes)-1)
-
-        for j in range(len(sorted_slopes)-1):
-            b_j = sorted_intercepts[j]
-            b_jp1 = sorted_intercepts[j+1]
-            a_j = sorted_slopes[j]
-            a_jp1 = sorted_slopes[j+1]
-
-            b = -b_j + a_j * (b_jp1 - b_j) / (a_jp1 - a_j)
-            a = -(b_jp1 - b_j) / (a_jp1 - a_j)
-
-            new_slopes[j] = a
-            new_intercepts[j] = b
+        domain_start = -np.Infinity if self._bounded_domain else self._slopes[0]
+        domain_end = np.Infinity if self._bounded_domain else self._slopes[-1]
 
         return PiecewiseAffine(
-            new_slopes,
+            breakpoints,
             new_intercepts,
-            sorted_slopes[0],
-            sorted_slopes[-1],
-            not self._bounded_domain
-        )
+            domain_start=domain_start,
+            domain_end=domain_end,
+            bounded=not self._bounded_domain
+            )
 
     def __add__(self, other: 'PiecewiseAffine') -> 'PiecewiseAffine':
         """
@@ -160,12 +162,14 @@ class PiecewiseAffine:
                 new_intercepts.append(self_intercept + other_intercept)
                 i += 1
 
+        bounded = self._bounded_domain or other._bounded_domain
+
         return PiecewiseAffine(
             new_slopes,
             new_intercepts,
-            max(self._domain_start, other._domain_start),
-            min(self._domain_end, other._domain_end),
-            self._bounded_domain or other._bounded_domain
+            domain_start=-np.infty if not bounded else max(self._domain_start, other._domain_start),
+            domain_end=np.infty if not bounded else min(self._domain_end, other._domain_end),
+            bounded=bounded
         )
 
     def __mul__(self, other: float) -> 'PiecewiseAffine':
@@ -191,15 +195,21 @@ class PiecewiseAffine:
     def __rmul__(self, other: float) -> 'PiecewiseAffine':
         return self.__mul__(other)
 
-    def to_plot(self, num_points=100):
+    def to_plot(self, num_points=100, start=DEFAULT_DOMAIN_START, end=DEFAULT_DOMAIN_END):
         """
         Generates and displays a plot for the given function over its domain.
 
         :param num_points: The number of points to use for the domain discretization.
         :type num_points: int
+        :param start: If unbounded domain, first x to plot.
+        :type start: float
+        :param end: If unbounded domain, last x to plot.
+        :type end: float
         :return: None
         """
-        x = np.linspace(self._domain_start, self._domain_end, num_points)
+        start = start if not self._bounded_domain else self._domain_start
+        end = end if not self._bounded_domain else self._domain_end
+        x = np.linspace(start, end, num_points)
         fig = plt.figure()
         ax = fig.add_subplot()
         plt.plot(x, self(x))
@@ -227,9 +237,11 @@ class PiecewiseAffine:
         assert len(weights) == len(f_arr)
 
         f_star = weights[0] * (f_arr[0].convex_conjugate())
+        f_arr[0].convex_conjugate().to_plot()
         for i in range(1, len(weights)):
             f_star = f_star +  (weights[i] * (f_arr[i].convex_conjugate()))
-        f_star.to_plot()
+            f_arr[i].convex_conjugate().to_plot()
+
         f_mixture = f_star.convex_conjugate()
         return f_mixture
 
