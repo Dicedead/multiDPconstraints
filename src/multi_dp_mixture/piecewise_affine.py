@@ -60,6 +60,7 @@ class PiecewiseAffine:
             return new_slopes, new_intercepts
 
         def keep_only_unique_pairs(sorted_slope_and_offset_pairs):
+            # currently not using the fact that they're sorted, applying naive algo instead
             unique_pairs = []
             for slope, offset in sorted_slope_and_offset_pairs:
                 if (slope, offset) not in unique_pairs:
@@ -71,7 +72,6 @@ class PiecewiseAffine:
 
         pairs = list(zip(kept_slopes, kept_intercepts))
         pairs.sort(key=lambda pair: pair[0])
-
         pairs = keep_only_unique_pairs(pairs)
 
         kept_slopes, kept_intercepts = list(zip(*pairs))  # unzips the list of pairs into two lists
@@ -155,12 +155,10 @@ class PiecewiseAffine:
         new_slopes = []
         new_intercepts = []
 
-        i = 0
         for self_slope, self_intercept in zip(self._slopes, self._intercepts):
             for other_slope, other_intercept in zip(other._slopes, other._intercepts):
                 new_slopes.append(self_slope + other_slope)
                 new_intercepts.append(self_intercept + other_intercept)
-                i += 1
 
         bounded = self._bounded_domain or other._bounded_domain
 
@@ -194,6 +192,15 @@ class PiecewiseAffine:
 
     def __rmul__(self, other: float) -> 'PiecewiseAffine':
         return self.__mul__(other)
+
+    def rescale(self, factor: float) -> 'PiecewiseAffine':
+        return PiecewiseAffine(
+            self._slopes / factor,
+            self._intercepts,
+            self._domain_start,
+            self._domain_end,
+            self._bounded_domain
+        )
 
     def to_plot(self, num_points=100, start=DEFAULT_DOMAIN_START, end=DEFAULT_DOMAIN_END):
         """
@@ -236,10 +243,10 @@ class PiecewiseAffine:
         """
         assert len(weights) == len(f_arr)
 
-        f_star = weights[0] * (f_arr[0].convex_conjugate())
+        f_star = weights[0] * f_arr[0].convex_conjugate()
         f_arr[0].convex_conjugate().to_plot()
         for i in range(1, len(weights)):
-            f_star = f_star +  (weights[i] * (f_arr[i].convex_conjugate()))
+            f_star += weights[i] * f_arr[i].convex_conjugate()
             f_arr[i].convex_conjugate().to_plot()
 
         f_mixture = f_star.convex_conjugate()
