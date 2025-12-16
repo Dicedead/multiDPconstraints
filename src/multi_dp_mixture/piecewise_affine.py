@@ -193,16 +193,16 @@ class PiecewiseAffine:
     def __rmul__(self, other: float) -> 'PiecewiseAffine':
         return self.__mul__(other)
 
-    def rescale(self, factor: float) -> 'PiecewiseAffine':
+    def rescale_arg(self, factor: float) -> 'PiecewiseAffine':
         return PiecewiseAffine(
             self._slopes / factor,
             self._intercepts,
-            self._domain_start,
-            self._domain_end,
+            self._domain_start * factor,
+            self._domain_end * factor,
             self._bounded_domain
         )
 
-    def to_plot(self, num_points=100, start=DEFAULT_DOMAIN_START, end=DEFAULT_DOMAIN_END):
+    def to_plot(self, num_points=100, start=-5, end=5):
         """
         Generates and displays a plot for the given function over its domain.
 
@@ -244,11 +244,8 @@ class PiecewiseAffine:
         assert len(weights) == len(f_arr)
 
         f_star = weights[0] * f_arr[0].convex_conjugate()
-        f_arr[0].convex_conjugate().to_plot()
         for i in range(1, len(weights)):
             f_star += weights[i] * f_arr[i].convex_conjugate()
-            f_arr[i].convex_conjugate().to_plot()
-
         f_mixture = f_star.convex_conjugate()
         return f_mixture
 
