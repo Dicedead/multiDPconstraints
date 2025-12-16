@@ -18,68 +18,13 @@ class PiecewiseAffine:
             domain_end: float = DEFAULT_DOMAIN_END,
             bounded: bool = False
     ):
-        """
-        Initializes the PiecewiseAffine object with slopes and intercepts.
+        pairs = list(zip(slopes, intercepts))
+        useful_pairs = PiecewiseAffine.__keep_useful_lines(pairs)
 
-        This constructor takes two lists representing slopes and intercepts of
-        linear equations, converts them into numpy arrays, and stores them as
-        internal attributes.
+        self._slopes = np.array([p[0] for p in useful_pairs])
+        self._intercepts = np.array([p[1] for p in useful_pairs])
 
-        :param slopes: List of slopes corresponding to the linear equations.
-        :type slopes: Array
-        :param intercepts: List of intercepts corresponding to the linear equations,
-                           of the same length as the list of slopes.
-        :type intercepts: Array
-        """
-
-        def first_pair_is_lower(a1, b1, a2, b2):
-            if not bounded:
-                if a1 == a2:
-                    return b1 <= b2
-                return False
-
-            if a1 <= a2:
-                return a1 * domain_start + b1 <= a2 * domain_start + b2
-            return a1 * domain_end + b1 <= a2 * domain_end + b2
-
-        def keep_only_useful_pairs():
-            new_slopes = []
-            new_intercepts = []
-
-            for first_slope, first_intercept in zip(slopes, intercepts):
-                keep_pair = True
-                for second_slope, second_intercept in zip(slopes, intercepts):
-                    if first_slope != second_slope or first_intercept != second_intercept:
-                        if first_pair_is_lower(first_slope, first_intercept, second_slope, second_intercept):
-                            keep_pair = False
-
-                if keep_pair:
-                    new_slopes.append(first_slope)
-                    new_intercepts.append(first_intercept)
-
-            return new_slopes, new_intercepts
-
-        def keep_only_unique_pairs(sorted_slope_and_offset_pairs):
-            # currently not using the fact that they're sorted, applying naive algo instead
-            unique_pairs = []
-            for slope, offset in sorted_slope_and_offset_pairs:
-                if (slope, offset) not in unique_pairs:
-                    unique_pairs.append((slope, offset))
-
-            return unique_pairs
-
-        kept_slopes, kept_intercepts = keep_only_useful_pairs()
-
-        pairs = list(zip(kept_slopes, kept_intercepts))
-        pairs.sort(key=lambda pair: pair[0])
-        pairs = keep_only_unique_pairs(pairs)
-
-        kept_slopes, kept_intercepts = list(zip(*pairs))  # unzips the list of pairs into two lists
-
-        self._slopes = np.array(kept_slopes)
         self._inner_slopes = self._slopes.reshape(1, -1)
-
-        self._intercepts = np.array(kept_intercepts)
         self._inner_intercepts = self._intercepts.reshape(1, -1)
 
         self._domain_start = domain_start
@@ -230,6 +175,32 @@ class PiecewiseAffine:
         plt.show()
 
     @staticmethod
+    def __keep_useful_lines(pairs):
+        """
+        Compute the upper convex hull of (slope, intercept) pairs.
+        Assumes max-of-affines representation.
+        """
+
+        points = sorted(set(pairs))
+        if len(points) <= 1:
+            return points
+
+        hull = []
+        for x3, y3 in points:
+            while len(hull) >= 2:
+                x1, y1 = hull[-2]
+                x2, y2 = hull[-1]
+
+                if (y2 - y1) * (x3 - x2) <= (y3 - y2) * (x2 - x1):
+                    hull.pop()
+                else:
+                    break
+
+            hull.append((x3, y3))
+
+        return hull
+
+    @staticmethod
     def weighted_infimal_convolution(weights: Array, f_arr: List['PiecewiseAffine']) -> 'PiecewiseAffine':
         """
         Computes the weighted infimal convolution of a list of PiecewiseAffine functions,
@@ -243,9 +214,9 @@ class PiecewiseAffine:
         """
         assert len(weights) == len(f_arr)
 
-        f_star = weights[0] * f_arr[0].convex_conjugate()
+        f_star = weights[0] * (f_arr[0].convex_conjugate())
         for i in range(1, len(weights)):
-            f_star += weights[i] * f_arr[i].convex_conjugate()
+            f_star += weights[i] * (f_arr[i].convex_conjugate())
         f_mixture = f_star.convex_conjugate()
         return f_mixture
 
@@ -275,8 +246,6 @@ class PiecewiseAffine:
         for f, label in zip(f_arr, labels):
             plt.plot(x, f(x), label=label)
 
-
-        plt.plot(x, IDENTITY(x), "k--")
         plt.plot(x, DIAGONAL(x), "k--")
         plt.legend()
         ax.set_aspect('equal', adjustable='box')
@@ -285,5 +254,4 @@ class PiecewiseAffine:
         plt.show()
 
 
-IDENTITY = PiecewiseAffine([ 1], [0])
 DIAGONAL = PiecewiseAffine([-1], [1])

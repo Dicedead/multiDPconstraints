@@ -31,13 +31,11 @@ def double_convex_conj_is_identity_test():
 def first_addition_test():
     alpha_1 = 0.5
     alpha_2 = 1 - alpha_1
-    f1 = SingleEpsDeltaTradeoff(0.8, 0.1)
-    f2 = SingleEpsDeltaTradeoff(0.25, 0.2)
-    f1.convex_conjugate().to_plot()
-    f2.convex_conjugate().to_plot()
+    f1 = SingleEpsDeltaTradeoff(1.3, 0.1)
+    f2 = SingleEpsDeltaTradeoff(0.5, 0.2)
     f = PiecewiseAffine.weighted_infimal_convolution([alpha_1, alpha_2], [f1, f2])
 
-    PiecewiseAffine.plot_multiple_functions([f1, f2, f], ["f1", "f2", "f"])
+    PiecewiseAffine.plot_multiple_functions([f1, f2, f], ["$(1.3,0.1)$-DP", "$(0.5,0.2)$-DP", "Mixture"])
 
 
 first_addition_test()
