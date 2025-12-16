@@ -1,6 +1,8 @@
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
 from multi_dp_mixture.piecewise_affine import PiecewiseAffine
 from imports import *
+from main_theorems.combinatorial_version import privacy_region_composition_double_dp_combinatorial
+from main_theorems.heterogeneous_version import privacy_region_composition_double_dp_heterogeneous_comp
 
 def multi_dp_test():
     eps_s = [0.8, 0.25]
@@ -37,6 +39,17 @@ def first_addition_test():
 
     PiecewiseAffine.plot_multiple_functions([f1, f2, f], ["$(1.3,0.1)$-DP", "$(0.5,0.2)$-DP", "Mixture"])
 
+def two_theorems_match():
+    eps_1 = 1.3
+    delta_1 = 0.1
+    eps_2 = 0.5
+    delta_2 = 0.2
+    k = 3
 
-first_addition_test()
-# double_convex_conj_is_identity_test()
+    f1 = privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_2, delta_2, k)
+    f2 = privacy_region_composition_double_dp_combinatorial(eps_1, delta_1, eps_2, delta_2, k)
+
+    f1.to_plot()
+    f2.to_plot()
+
+two_theorems_match()
