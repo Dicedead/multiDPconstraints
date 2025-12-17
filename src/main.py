@@ -44,12 +44,12 @@ def two_theorems_match():
     delta_1 = 0.1
     eps_2 = 0.5
     delta_2 = 0.2
-    k = 3
+    k = 1
 
     f1 = privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_2, delta_2, k)
     f2 = privacy_region_composition_double_dp_combinatorial(eps_1, delta_1, eps_2, delta_2, k)
+    fo = MultiEpsDeltaTradeoff([eps_1, eps_2], [delta_1, delta_2])
 
-    f1.to_plot()
-    f2.to_plot()
+    PiecewiseAffine.plot_multiple_functions([fo, f1, f2], ["Original double DP guarantee", "Heterogeneous", "Combinatorial"])
 
 two_theorems_match()

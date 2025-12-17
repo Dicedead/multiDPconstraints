@@ -38,7 +38,7 @@ def privacy_region_composition_heterogeneous(eps_1, eps_2, x, y) -> PiecewiseAff
         delta = delta * first_factor * second_factor
         return delta
 
-    def compute_a_set():
+    def compute_a():
         a_set = []
         for a in range(0,x+1):
             for b in range(0,y+1):
@@ -54,7 +54,7 @@ def privacy_region_composition_heterogeneous(eps_1, eps_2, x, y) -> PiecewiseAff
     if eps_2 > eps_1:
         eps_1, eps_2 = eps_2, eps_1
 
-    a_set = compute_a_set()
+    a_set = compute_a()
     eps_ls = [compute_epsilon_from_ab(a, b) for a, b in a_set]
     delta_ls = [compute_delta_from_ab(a, b) for a, b in a_set]
 
@@ -86,12 +86,12 @@ def privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_
     assert 0 <= delta_2 <= 1
     assert k >= 1
 
-    exp_eps_1 = np.exp(eps_1)
-    exp_eps_2 = np.exp(eps_2)
-
     if delta_1 > delta_2:
         delta_1, delta_2 = delta_2, delta_1
         eps_1, eps_2 = eps_2, eps_1
+
+    exp_eps_1 = np.exp(eps_1)
+    exp_eps_2 = np.exp(eps_2)
 
     assert (1-delta_1) * (1+exp_eps_2) < (1-delta_2) * (1+exp_eps_1)
 
@@ -103,9 +103,9 @@ def privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_
     weights = [1-heterogeneous_weight]
     functions = [SingleEpsDeltaTradeoff(0, 1)]
 
-    for i in range(k+1):
+    for i in range(0, k+1):
         weight = heterogeneous_weight * sp.comb(k, i) * (alpha ** i) * ((1-alpha) ** (k-i))
         weights.append(weight)
-        functions.append(privacy_region_composition_heterogeneous(eps_1, eps_2, i, k))
+        functions.append(privacy_region_composition_heterogeneous(eps_1, eps_2, i, k-i))
 
     return PiecewiseAffine.weighted_infimal_convolution(weights, functions)

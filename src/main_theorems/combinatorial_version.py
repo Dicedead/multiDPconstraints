@@ -47,12 +47,12 @@ def privacy_region_composition_double_dp_combinatorial(eps_1, delta_1, eps_2, de
     assert 0 <= delta_2 <= 1
     assert k >= 1
 
-    exp_eps_1 = np.exp(eps_1)
-    exp_eps_2 = np.exp(eps_2)
-
     if delta_1 > delta_2:
         delta_1, delta_2 = delta_2, delta_1
         eps_1, eps_2 = eps_2, eps_1
+
+    exp_eps_1 = np.exp(eps_1)
+    exp_eps_2 = np.exp(eps_2)
 
     assert (1-delta_1) * (1+exp_eps_2) < (1-delta_2) * (1+exp_eps_1)
 
@@ -74,7 +74,7 @@ def privacy_region_composition_double_dp_combinatorial(eps_1, delta_1, eps_2, de
         for u in range(lower_u_bound, k+1):
             eps_u_v = eps_1 * (u + v - k) + eps_2 * (u - v)
             b_set_u_v = compute_b_set(u, v)
-            delta_u_v = 0
+            delta_u_v = 0.
 
             for a, b, c, d in b_set_u_v:
                 multi = multinomial(a, b, c, d)
