@@ -26,12 +26,13 @@ def privacy_region_composition_heterogeneous(eps_1, eps_2, x, y) -> PiecewiseAff
         delta = 0
         slope = -np.exp(compute_epsilon_from_ab(a_star, b_star))
 
-        for a in range(0, x+1):
-            for b in range(0, y+1):
+        for b in range(0, y+1):
+            lower_a = max(int(np.ceil((y-b_star-b)*(eps_2/eps_1) + (x-a_star))), 0)
+            for a in range(lower_a, x+1):
                 first_term = np.exp(a * eps_1 + b * eps_2)
                 second_term = slope * np.exp((x - a) * eps_1 + (y - b) * eps_2)
 
-                delta += sp.comb(x, a) * sp.comb(y, b) * max(0, first_term + second_term)
+                delta += sp.comb(x, a, exact=True) * sp.comb(y, b, exact=True) * (first_term + second_term)
 
         first_factor = (1/(np.exp(eps_1)+1)) ** x
         second_factor = (1/(np.exp(eps_2)+1)) ** y

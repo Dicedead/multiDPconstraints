@@ -70,7 +70,7 @@ def privacy_region_composition_double_dp_combinatorial(eps_1, delta_1, eps_2, de
     alpha = alpha_num / alpha_denom
 
     for v in range(0, k+1):
-        lower_u_bound = int(np.ceil((k * eps_1 - v * (eps_1 - eps_2))/(eps_1 + eps_2)))
+        lower_u_bound = max(0, int(np.ceil((k * eps_1 - v * (eps_1 - eps_2))/(eps_1 + eps_2))))
         for u in range(lower_u_bound, k+1):
             eps_u_v = eps_1 * (u + v - k) + eps_2 * (u - v)
             b_set_u_v = compute_b_set(u, v)

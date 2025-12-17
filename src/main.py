@@ -42,11 +42,11 @@ def first_addition_test():
     PiecewiseAffine.plot_multiple_functions([f1, f2, f], ["$(1.3,0.1)$-DP", "$(0.5,0.2)$-DP", "Mixture"])
 
 def two_theorems_match():
-    eps_1 = 1.3
+    eps_1 = 1.31
     delta_1 = 0.1
     eps_2 = 0.5
     delta_2 = 0.2
-    k = 4
+    k = 3
 
     f1 = privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_2, delta_2, k)
     f2 = privacy_region_composition_double_dp_combinatorial(eps_1, delta_1, eps_2, delta_2, k)
@@ -59,15 +59,15 @@ def two_theorems_match():
          #fo,
          f1,
          f2,
-         #f_dp_1,
-         #f_dp_2
+         f_dp_1,
+         f_dp_2
          ],
         [
         #f"$({eps_1},{delta_1})$ and $({eps_2},{delta_2})$ DP",
          f"Heterogeneous ${k}$ comp.",
          f"Combinatorial ${k}$ comp.",
-         #f"$({eps_1},{delta_1})$-DP {k} comp.",
-         #f"$({eps_2},{delta_2})$-DP {k} comp."
+         f"$({eps_1},{delta_1})$-DP {k} comp.",
+         f"$({eps_2},{delta_2})$-DP {k} comp."
          ]
     )
 
