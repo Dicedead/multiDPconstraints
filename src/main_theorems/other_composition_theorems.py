@@ -3,20 +3,17 @@ from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff
 from multi_dp_mixture.piecewise_affine import PiecewiseAffine
 
 
-def region_from_dp_composition_exact(eps: float, delta: float, k: int) -> PiecewiseAffine:
+def privacy_region_composition_exact(eps: float, delta: float, k: int) -> PiecewiseAffine:
     """
     Compute the differential privacy composition region corresponding to the improved result for the composition
     of differentially private mechanisms.
 
     :param eps: Epsilon parameter of the differentially private mechanisms being composed.
     :type eps: float
-
     :param delta: Delta parameter of the differentially private mechanisms being composed.
     :type delta: float
-
     :param k: Number of composed mechanisms.
     :type k: int
-
     :return: Piecewise affine function representing the composition region.
     :rtype: PiecewiseAffine
     """
@@ -36,7 +33,7 @@ def region_from_dp_composition_exact(eps: float, delta: float, k: int) -> Piecew
 
     return MultiEpsDeltaTradeoff(eps_ls, delta_ls)
 
-def region_from_dp_composition_exact_total_var(
+def privacy_region_dp_composition_total_var(
         eps: float,
         delta: float,
         eta: float,
@@ -48,16 +45,12 @@ def region_from_dp_composition_exact_total_var(
 
     :param eps: Epsilon parameter of the differentially private mechanisms being composed.
     :type eps: float
-
     :param delta: Delta parameter of the differentially private mechanisms being composed.
     :type delta: float
-
     :param eta: Total variation of the considered mechanisms.
     :type eta: float
-
     :param k: Number of composed mechanisms.
     :type k: int
-
     :return: Piecewise affine function representing the composition region.
     :rtype: PiecewiseAffine
     """

@@ -20,6 +20,65 @@ def privacy_region_composition_heterogeneous(eps_1, eps_2, x, y) -> PiecewiseAff
     :rtype: PiecewiseAffine
     """
     def compute_epsilon_from_ab(a, b):
+        return eps_1 * (x - 2 * a) + eps_2 * (y - 2 * b)
+
+    def compute_delta_from_ab(a_star, b_star):
+        delta = 0
+        slope = -np.exp(compute_epsilon_from_ab(a_star, b_star))
+
+        for a in range(0, x+1):
+            for b in range(0, y+1):
+                first_term = np.exp(a * eps_1 + b * eps_2)
+                second_term = slope * np.exp((x - a) * eps_1 + (y - b) * eps_2)
+
+                delta += sp.comb(x, a) * sp.comb(y, b) * max(0, first_term + second_term)
+
+        first_factor = (1/(np.exp(eps_1)+1)) ** x
+        second_factor = (1/(np.exp(eps_2)+1)) ** y
+        delta = delta * first_factor * second_factor
+        return delta
+
+    def compute_ab_star():
+        a_set = []
+        for a in range(0,x+1):
+            for b in range(0,y+1):
+                if compute_epsilon_from_ab(a, b) >= 0:
+                    a_set.append((a,b))
+        return a_set
+
+    assert eps_1 > 0
+    assert eps_2 > 0
+    assert x >= 0
+    assert y >= 0
+
+    if eps_2 > eps_1:
+        eps_1, eps_2 = eps_2, eps_1
+        x, y = y, x
+
+    a_set = compute_ab_star()
+    eps_ls = [compute_epsilon_from_ab(a_star, b_star) for a_star, b_star in a_set]
+    delta_ls = [compute_delta_from_ab(a_star, b_star) for a_star, b_star in a_set]
+
+    return MultiEpsDeltaTradeoff(eps_ls, delta_ls)
+
+
+def privacy_region_composition_heterogeneous_fails_sanity_check(eps_1, eps_2, x, y) -> PiecewiseAffine:
+    """
+    Computes privacy region corresponding to the composition of x (eps_1,0)-DP mechanisms
+    with y (eps_2, 0)-DP mechanisms.
+
+    :param eps_1: Privacy parameter epsilon for the first kind of mechanism.
+    :type eps_1: float. > 0
+    :param eps_2: Privacy parameter epsilon for the second kind of mechanism.
+    :type eps_2: float, > 0
+    :param x: Number of first kind of mechanisms.
+    :type x: int
+    :param y: Number of second kind of mechanisms.
+    :type y: int
+    :return: A compositional trade-off function derived from combinations of mechanisms.
+    :rtype: PiecewiseAffine
+    """
+    def compute_epsilon_from_ab(a, b):
         return eps_1 * (2 * a - x) + eps_2 * (2 * b - y)
 
     def compute_delta_from_ab(a_star, b_star):
@@ -53,6 +112,7 @@ def privacy_region_composition_heterogeneous(eps_1, eps_2, x, y) -> PiecewiseAff
 
     if eps_2 > eps_1:
         eps_1, eps_2 = eps_2, eps_1
+        x, y = y, x
 
     a_set = compute_a()
     eps_ls = [compute_epsilon_from_ab(a, b) for a, b in a_set]
@@ -104,7 +164,7 @@ def privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_
     functions = [SingleEpsDeltaTradeoff(0, 1)]
 
     for i in range(0, k+1):
-        weight = heterogeneous_weight * sp.comb(k, i) * (alpha ** i) * ((1-alpha) ** (k-i))
+        weight = heterogeneous_weight * sp.comb(k, i) * ((1 - alpha) ** i) * (alpha ** (k-i))
         weights.append(weight)
         functions.append(privacy_region_composition_heterogeneous(eps_1, eps_2, i, k-i))
 

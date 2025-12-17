@@ -214,9 +214,14 @@ class PiecewiseAffine(TradeOffFunction):
         """
         assert len(weights) == len(f_arr)
 
-        f_star = weights[0] * (f_arr[0].convex_conjugate())
+        weights = np.array(weights)
+        mask = np.argwhere(weights > 0).reshape(-1)
+        weights = [float(x) for x in weights[mask]]
+        f_arr = [f_arr[i] for i in mask]
+
+        f_star = weights[0] * f_arr[0].convex_conjugate()
         for i in range(1, len(weights)):
-            f_star += weights[i] * (f_arr[i].convex_conjugate())
+            f_star += weights[i] * f_arr[i].convex_conjugate()
         f_mixture = f_star.convex_conjugate()
         return f_mixture
 
