@@ -37,7 +37,7 @@ def privacy_region_composition_double_dp_combinatorial(eps_1, delta_1, eps_2, de
         result = 1
         remaining = n
         for k in ks:
-            result *= math.comb(remaining, k)
+            result *= sps.comb(remaining, k)
             remaining -= k
         return result
 

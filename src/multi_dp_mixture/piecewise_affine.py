@@ -2,7 +2,7 @@ import numpy as np
 
 from src.definitions import *
 
-class PiecewiseAffine(TradeOffFunction):
+class PiecewiseAffine:
     """
     Represents a piecewise affine function.
 

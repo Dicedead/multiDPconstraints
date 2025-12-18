@@ -32,7 +32,7 @@ def privacy_region_composition_heterogeneous(eps_1, eps_2, x, y) -> PiecewiseAff
                 first_term = np.exp(a * eps_1 + b * eps_2)
                 second_term = slope * np.exp((x - a) * eps_1 + (y - b) * eps_2)
 
-                delta += sp.comb(x, a, exact=True) * sp.comb(y, b, exact=True) * (first_term + second_term)
+                delta += sps.comb(x, a, exact=True) * sps.comb(y, b, exact=True) * (first_term + second_term)
 
         first_factor = (1/(np.exp(eps_1)+1)) ** x
         second_factor = (1/(np.exp(eps_2)+1)) ** y
@@ -165,7 +165,7 @@ def privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_
     functions = [SingleEpsDeltaTradeoff(0, 1)]
 
     for i in range(0, k+1):
-        weight = heterogeneous_weight * sp.comb(k, i) * ((1 - alpha) ** i) * (alpha ** (k-i))
+        weight = heterogeneous_weight * sps.comb(k, i) * ((1 - alpha) ** i) * (alpha ** (k-i))
         weights.append(weight)
         functions.append(privacy_region_composition_heterogeneous(eps_1, eps_2, i, k-i))
 
