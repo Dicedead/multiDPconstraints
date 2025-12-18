@@ -1,3 +1,4 @@
+from f_dp_approximation.gaussian_tradeoff import GaussianTradeoff
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
 from multi_dp_mixture.piecewise_affine import PiecewiseAffine, DIAGONAL
 from imports import *
@@ -5,7 +6,7 @@ from main_theorems.combinatorial_version import privacy_region_composition_doubl
 from main_theorems.heterogeneous_version import privacy_region_composition_double_dp_heterogeneous_comp, \
     privacy_region_composition_heterogeneous
 from main_theorems.other_composition_theorems import *
-from utils import plot_multiple_functions
+from utils import plot_multiple_functions, plot_one_function
 
 
 def multi_dp_test():
@@ -94,6 +95,14 @@ def privacy_region_heter_sanity_check():
 
     plot_multiple_functions([f_comp, f_original],["Heterogeneous new", "Original"])
 
+def gaussian_tradeoff_approx():
+    mu = 1
+    g_mu = GaussianTradeoff(mu)
+    g_mu_approx_below = g_mu.approx_from_below()
+    g_mu_approx_above = g_mu.approx_from_above()
+    plot_multiple_functions(
+        [g_mu, g_mu_approx_below, g_mu_approx_above],
+        [f"${mu}-GDP$", f"Approx below", "Approx above"]
+    )
 
-two_theorems_match()
-# privacy_region_heter_sanity_check()
+gaussian_tradeoff_approx()

@@ -42,3 +42,6 @@ def plot_multiple_functions(
     ax.set_autoscale_on(False)
 
     plt.show()
+
+def plot_one_function(f: TradeOffFunction, label: str, start=0, end=1, num_points=100):
+    plot_multiple_functions([f], [label], start, end, num_points)
