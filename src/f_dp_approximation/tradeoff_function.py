@@ -1,7 +1,5 @@
 from definitions import *
 
-TradeOffFunction = Callable[[Array], Array]
-
 class SmoothTradeOffFunction(TradeOffFunction, ABC):
 
     @abstractmethod
