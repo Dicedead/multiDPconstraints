@@ -100,7 +100,7 @@ def gaussian_tradeoff_approx():
     # eps = 1
     # delta = 0.02
     # mu = GaussianTradeoff.compute_mu_from_eps_delta(eps, delta)
-    mu = 1
+    mu = 0.05
     g_mu = GaussianTradeoff(mu)
     g_mu_approx_below = g_mu.approx_from_below()
     g_mu_approx_above = g_mu.approx_from_above()
@@ -120,6 +120,40 @@ def gaussian_tradeoff_approx():
         ]
     )
 
+def gaussian_compos_approx():
+    mu = 0.05
+    k = 20
+    mu_composed = np.sqrt(k) * mu
+    g_mu = GaussianTradeoff(mu)
+    g_mu_composed = GaussianTradeoff(mu_composed)
+    g_mu_approx_below = g_mu.approx_from_below()
+    g_mu_approx_above = g_mu.approx_from_above()
+
+    eps_ls = g_mu_approx_below.get_eps_list()
+    delta_ls = g_mu_approx_below.get_delta_list()
+    g_mu_composed_below = privacy_region_composition_double_dp_heterogeneous_comp(
+        eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k
+    )
+
+    eps_ls = g_mu_approx_above.get_eps_list()
+    delta_ls = g_mu_approx_above.get_delta_list()
+    g_mu_composed_above = privacy_region_composition_double_dp_heterogeneous_comp(
+        eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k
+    )
+
+    plot_multiple_functions(
+        [
+            g_mu_composed,
+            g_mu_composed_below,
+            g_mu_composed_above
+        ],
+        [
+            f"${float(mu):.2}-GDP$ comp. {k} times $= {float(mu_composed):.2}-GDP$",
+            "Comp. approx from below",
+            "Comp. approx from above"
+        ]
+    )
+
 def laplace_tradeoff_approx():
     eps = 1
     laplace_eps = LaplaceTradeoff(eps)
@@ -135,7 +169,7 @@ def laplace_tradeoff_approx():
         ],
         [
             f"$Laplace({eps})-DP$",
-            f"Approx below",
+            "Approx below",
             "Approx above",
             # "Default eps delta guarantee"
         ]
@@ -144,3 +178,4 @@ def laplace_tradeoff_approx():
 
 laplace_tradeoff_approx()
 gaussian_tradeoff_approx()
+gaussian_compos_approx()

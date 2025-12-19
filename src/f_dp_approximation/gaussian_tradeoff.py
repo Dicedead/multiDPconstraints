@@ -3,12 +3,31 @@ from f_dp_approximation.tradeoff_function import SmoothTradeOffFunction
 
 
 class GaussianTradeoff(SmoothTradeOffFunction):
+    """
+    Represent a tradeoff function T(N(mu,1), N(0,1)).
+    """
+
     def __init__(self, mu: float):
+        """
+        Parameter mu is the mean of the underlying Gaussian distribution compared against the
+        standard normal distribution.
+
+        :param mu: float
+        """
         self._mu = mu
         super().__init__()
 
     @staticmethod
     def compute_mu_from_eps_delta(eps: float, delta: float) -> float:
+        """
+        Compute the parameter mu based on the given epsilon and delta in order for
+        the corresponding tradeoff function to achieve at least (eps, delta)-DP.
+
+        :param eps: Positive float value representing the epsilon parameter.
+        :param delta: Positive float value within the interval (0, 1] representing the
+            delta parameter.
+        :return: The computed mu as a float value.
+        """
         assert 1 >= delta > 0
         assert eps >= 0
         return eps/np.sqrt(2 * np.log(5/(4 * delta)))

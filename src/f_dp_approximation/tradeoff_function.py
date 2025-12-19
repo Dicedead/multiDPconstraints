@@ -1,6 +1,5 @@
 from definitions import *
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
-from multi_dp_mixture.piecewise_affine import PiecewiseAffine
 
 
 class SmoothTradeOffFunction(TradeOffFunction, ABC):
@@ -149,7 +148,7 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
             t_star = t_approx_below
         else:
             t_star = spo.root_scalar(
-                f=g.root_t_star(),
+                f=g.preprocess_for_approx_below(),
                 x0=g.get_z()/2,
                 fprime=True
             ).root
@@ -227,8 +226,12 @@ class NormalRotation:
         """
         return self._z
 
-    def root_t_star(self):
-        # TODO doc
+    def preprocess_for_approx_below(self):
+        """
+        Prepare function to find parameter t for approximation from below.
+
+        :return: Function to evaluate in root finding problem, and its derivative.
+        """
         def eval_and_deriv(t):
             u1 = (t + self._z)/2
             u2 = t/2
@@ -253,6 +256,15 @@ class NormalRotation:
         return eval_and_deriv
 
     def invert_u(self, u: float) -> float:
+        """
+        Invert the input value `u` to find the corresponding root of the equation
+        defined by the function rotation change and its derivatives.
+
+        :param u: Input value to be inverted.
+        :type u: float
+        :return: The root found for the corresponding input value `u`.
+        :rtype: float
+        """
         return spo.root_scalar(
             f=self._f.rotation_change(u),
             x0=self._f.fixed_point()/2,
@@ -261,6 +273,14 @@ class NormalRotation:
         ).root
 
     def call(self, u: Array, x_u: Array = None) -> Array:
+        """
+        Evaluate the rotated function at `u` using the precomputed `x_u` values, or compute them if not provided.
+
+        :param u: Input array or a single value used for computation.
+        :param x_u: Optional precomputed array or single value to bypass
+            the default computation of `x_u`, root of u.
+        :return: Rotated function value at u
+        """
         if x_u is None:
             x_u = [self.invert_u(ui) for ui in u] if type(u) is Array else self.invert_u(u)
         return (x_u + self._f(x_u))/np.sqrt(2)
@@ -269,12 +289,30 @@ class NormalRotation:
         return self.call(u)
 
     def derivative_at(self, u: Array, x_u: Array = None) -> Array:
+        """
+        Evaluate the derivative of rotated function at `u` using the precomputed `x_u` values,
+        or compute them if not provided.
+
+        :param u: Input array or a single value used for computation.
+        :param x_u: Optional precomputed array or single value to bypass
+            the default computation of `x_u`, root of u.
+        :return: Rotated function value at u
+        """
         if x_u is None:
             x_u = [self.invert_u(ui) for ui in u] if type(u) is Array else self.invert_u(u)
         f_prime_x_u = self._f.derivative_at(x_u)
         return (1+f_prime_x_u)/(1-f_prime_x_u)
 
     def second_derivative_at(self, u: Array, x_u: Array = None) -> Array:
+        """
+        Evaluate the second derivative of rotated function at `u` using the precomputed `x_u` values,
+        or compute them if not provided.
+
+        :param u: Input array or a single value used for computation.
+        :param x_u: Optional precomputed array or single value to bypass
+            the default computation of `x_u`, root of u.
+        :return: Rotated function value at u
+        """
         if x_u is None:
             x_u = [self.invert_u(ui) for ui in u] if type(u) is Array else self.invert_u(u)
         f_prime_x_u = self._f.derivative_at(x_u)

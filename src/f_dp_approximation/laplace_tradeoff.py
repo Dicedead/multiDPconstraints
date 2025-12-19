@@ -3,9 +3,19 @@ from definitions import *
 
 
 class LaplaceTradeoff(SmoothTradeOffFunction):
-    # TODO write that this is supposed to fail because Laplace trade-off function is not strictly convex nor smooth
+    """
+    Represent a tradeoff function T(Laplace(0,1), Laplace(eps,1)). Note that this is not a strictly convex function
+    and twice differentiable function, hence we do not expect the approximation to always work.
+    """
 
     def __init__(self, eps: float):
+        """
+        Initializes an instance of the class with the specified privacy budget parameter.
+
+        :param eps: The privacy budget parameter. Must be a non-negative float.
+        :type eps: float
+        """
+        assert eps >= 0
         self._eps = eps
         self._exp_eps = np.exp(eps)
         self._cutoff = np.exp(-eps)/2

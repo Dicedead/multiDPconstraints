@@ -15,6 +15,8 @@ class MultiEpsDeltaTradeoff(PiecewiseAffine, TradeOffFunction):
 
         self._eps_ls = np.array(eps_ls.copy())
         self._delta_ls = np.array(delta_ls.copy())
+        self._eps_ls.flags.writeable = False
+        self._delta_ls.flags.writeable = False
 
         initial_slopes = -np.exp(self._eps_ls)
         inverse_slopes = 1/initial_slopes
@@ -28,6 +30,11 @@ class MultiEpsDeltaTradeoff(PiecewiseAffine, TradeOffFunction):
 
         super().__init__(slopes, intercepts, domain_start=0., domain_end=1., bounded=True)
 
+    def get_eps_list(self) -> Array:
+        return self._eps_ls
+
+    def get_delta_list(self) -> Array:
+        return self._delta_ls
 
 class SingleEpsDeltaTradeoff(MultiEpsDeltaTradeoff, TradeOffFunction):
     def __init__(self, eps: float, delta: float):
@@ -40,5 +47,12 @@ class SingleEpsDeltaTradeoff(MultiEpsDeltaTradeoff, TradeOffFunction):
         :ivar delta: The delta value characterising the privacy tradeoff.
         :type delta: Float
         """
+        self._eps = eps
+        self._delta = delta
         super().__init__([eps], [delta])
 
+    def get_eps(self):
+        return self._eps
+
+    def get_delta(self):
+        return self._delta
