@@ -65,9 +65,9 @@ def privacy_region_dp_composition_total_var(
     for j in range(k+1):
         eps_prime = j * eps
         delta_tmp = sum(
-            [ sp.comb(k, a) * sum(
+            [ sps.comb(k, a) * sum(
                 [
-                    sp.comb(k-a, l) * (((1-alpha)/(1+np.exp(eps))) ** (k-a)) * \
+                    sps.comb(k-a, l) * (((1-alpha)/(1+np.exp(eps))) ** (k-a)) * \
                     (alpha ** a) * (np.exp((k-l-a)*eps) - np.exp((l+j)*eps))
                     for l in range(np.ceil((k-j-a)/2.))
                 ]
