@@ -8,11 +8,11 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
     approximations, and other transformation calculations.
 
     :ivar _cached_c: Caches the computed fixed-point value for efficiency.
-    :type _cached_c: float
+    :type _cached_c: float or None
     """
 
     def __init__(self):
-        self._cached_c = None
+        self._cached_c: float | None = None
 
     @abstractmethod
     def __call__(self, x: Array) -> Array:
