@@ -48,6 +48,13 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
          """
         pass
 
+
+    def find_pivot_approx_above(self) -> float | None:
+        return None
+
+    def find_pivot_approx_below(self) -> float | None:
+        return None
+
     def fixed_point(self) -> float:
         """
         Finds and returns the fixed point of a function by solving the equation f(x) = x,
@@ -137,12 +144,15 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
         if g is None:
             g = NormalRotation(self)
 
-        t_star = spo.root_scalar(
-            f=g.root_t_star(),
-            bracket=(g.get_z(), 0),
-            x0=g.get_z()/2,
-            fprime=True
-        ).root
+        t_approx_below = self.find_pivot_approx_below()
+        if t_approx_below is not None:
+            t_star = t_approx_below
+        else:
+            t_star = spo.root_scalar(
+                f=g.root_t_star(),
+                x0=g.get_z()/2,
+                fprime=True
+            ).root
 
         t_1 = (t_star + g.get_z())/2
         t_2 = t_star/2
@@ -174,16 +184,19 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
         """
         offset = (self.fixed_point() - self(0))/self.fixed_point()
 
-        t_s = spo.root_scalar(
-            f=lambda t: self.derivative_at(t) - offset,
-            fprime=self.second_derivative_at,
-            x0=self.fixed_point()/2,
-            bracket=(0, self.fixed_point())
-        ).root
+        t_approx_above = self.find_pivot_approx_above()
+        if t_approx_above is not None:
+            t_s = t_approx_above
+        else:
+            t_s = spo.root_scalar(
+                f=lambda t: self.derivative_at(t) - offset,
+                fprime=self.second_derivative_at,
+                x0=self.fixed_point()/2
+            ).root
 
         h_ts = t_s * self(0) + self.fixed_point() * (self(t_s) - self(0) - t_s)
 
-        if h_ts <= 0:
+        if h_ts > 0:
             eps = np.log((self(0) - self.fixed_point())/self.fixed_point())
             delta = 1-self(0)
             return SingleEpsDeltaTradeoff(eps, delta)
@@ -242,7 +255,6 @@ class NormalRotation:
     def invert_u(self, u: float) -> float:
         return spo.root_scalar(
             f=self._f.rotation_change(u),
-            bracket=(0, self._f.fixed_point()),
             x0=self._f.fixed_point()/2,
             fprime=self._f.rotation_change_deriv(),
             fprime2=self._f.rotation_change_second_deriv()

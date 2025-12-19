@@ -1,4 +1,5 @@
 from f_dp_approximation.gaussian_tradeoff import GaussianTradeoff
+from f_dp_approximation.laplace_tradeoff import LaplaceTradeoff
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
 from multi_dp_mixture.piecewise_affine import PiecewiseAffine, DIAGONAL
 from imports import *
@@ -96,13 +97,50 @@ def privacy_region_heter_sanity_check():
     plot_multiple_functions([f_comp, f_original],["Heterogeneous new", "Original"])
 
 def gaussian_tradeoff_approx():
+    # eps = 1
+    # delta = 0.02
+    # mu = GaussianTradeoff.compute_mu_from_eps_delta(eps, delta)
     mu = 1
     g_mu = GaussianTradeoff(mu)
     g_mu_approx_below = g_mu.approx_from_below()
     g_mu_approx_above = g_mu.approx_from_above()
+    #default_eps_delta = SingleEpsDeltaTradeoff(eps, delta)
     plot_multiple_functions(
-        [g_mu, g_mu_approx_below, g_mu_approx_above],
-        [f"${mu}-GDP$", f"Approx below", "Approx above"]
+        [
+            g_mu,
+            g_mu_approx_below,
+            g_mu_approx_above,
+            #default_eps_delta
+        ],
+        [
+            f"${float(mu):.2}-GDP$",
+            f"Approx below",
+            "Approx above",
+            #"Default eps delta guarantee"
+        ]
     )
 
+def laplace_tradeoff_approx():
+    eps = 1
+    laplace_eps = LaplaceTradeoff(eps)
+    lap_eps_approx_below = laplace_eps.approx_from_below()
+    laps_eps_approx_above = laplace_eps.approx_from_above()
+    # default_eps_delta = SingleEpsDeltaTradeoff(eps, delta)
+    plot_multiple_functions(
+        [
+            laplace_eps,
+            lap_eps_approx_below,
+            laps_eps_approx_above
+            # default_eps_delta
+        ],
+        [
+            f"$Laplace({eps})-DP$",
+            f"Approx below",
+            "Approx above",
+            # "Default eps delta guarantee"
+        ]
+    )
+
+
+laplace_tradeoff_approx()
 gaussian_tradeoff_approx()

@@ -21,6 +21,8 @@ class PiecewiseAffine(TradeOffFunction):
 
         self._slopes = np.array([p[0] for p in useful_pairs])
         self._intercepts = np.array([p[1] for p in useful_pairs])
+        self._slopes.flags.writeable = False
+        self._intercepts.flags.writeable = False
 
         self._inner_slopes = self._slopes.reshape(1, -1)
         self._inner_intercepts = self._intercepts.reshape(1, -1)
@@ -197,6 +199,24 @@ class PiecewiseAffine(TradeOffFunction):
             hull.append((candidate_slope, candidate_intercept))
 
         return hull
+
+    def get_slopes(self) -> Array:
+        """
+        Retrieves the immutable list of slopes.
+
+        :return: Array of  slopes
+        :rtype: Array
+        """
+        return self._slopes
+
+    def get_intercepts(self):
+        """
+        Retrieves the immutable list of intercepts.
+
+        :return: Array of intercepts
+        :rtype: Array
+        """
+        return self._intercepts
 
     @staticmethod
     def weighted_infimal_convolution(weights: Array, f_arr: List['PiecewiseAffine']) -> 'PiecewiseAffine':

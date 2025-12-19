@@ -7,6 +7,12 @@ class GaussianTradeoff(SmoothTradeOffFunction):
         self._mu = mu
         super().__init__()
 
+    @staticmethod
+    def compute_mu_from_eps_delta(eps: float, delta: float) -> float:
+        assert 1 >= delta > 0
+        assert eps >= 0
+        return eps/np.sqrt(2 * np.log(5/(4 * delta)))
+
     def __call__(self, x: Array) -> Array:
         return spt.norm.cdf(spt.norm.ppf(1 - x) - self._mu)
 
