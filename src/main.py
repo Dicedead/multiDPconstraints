@@ -54,7 +54,7 @@ def first_addition_test():
                                              ])
 
 def two_theorems_match():
-    eps_1 = 1.3
+    eps_1 = 1.2
     delta_1 = 0.0
     eps_2 = 0.6
     delta_2 = 0.2
@@ -68,18 +68,18 @@ def two_theorems_match():
 
     plot_multiple_functions(
         [
-         fo,
-         #f1,
+         #fo,
+         f1,
          f2,
-         f_dp_1,
-         f_dp_2
+         #f_dp_1,
+         #f_dp_2
          ],
         [
-         f"$({eps_1},{delta_1})$ and $({eps_2},{delta_2})$ DP",
-         #f"Heterogeneous ${k}$ comp.",
-         f"Double DP ${k}$ comp.",
-         f"$({eps_1},{delta_1})$-DP {k} comp.",
-         f"$({eps_2},{delta_2})$-DP {k} comp."
+         #f"$({eps_1},{delta_1})$ and $({eps_2},{delta_2})$ DP",
+         f"Heterogeneous ${k}$ comp.",
+         f"Combinatorial ${k}$ comp.",
+         #f"$({eps_1},{delta_1})$-DP {k} comp.",
+         #f"$({eps_2},{delta_2})$-DP {k} comp."
          ]
     )
 
@@ -100,7 +100,7 @@ def gaussian_tradeoff_approx():
     # eps = 1
     # delta = 0.02
     # mu = GaussianTradeoff.compute_mu_from_eps_delta(eps, delta)
-    mu = 0.05
+    mu = 1
     g_mu = GaussianTradeoff(mu)
     g_mu_approx_below = g_mu.approx_from_below()
     g_mu_approx_above = g_mu.approx_from_above()
@@ -176,6 +176,7 @@ def laplace_tradeoff_approx():
     )
 
 
-laplace_tradeoff_approx()
-gaussian_tradeoff_approx()
-gaussian_compos_approx()
+two_theorems_match()
+# laplace_tradeoff_approx()
+# gaussian_tradeoff_approx()
+# gaussian_compos_approx()

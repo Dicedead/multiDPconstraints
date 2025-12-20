@@ -56,12 +56,6 @@ def privacy_region_composition_double_dp_combinatorial(eps_1, delta_1, eps_2, de
 
     assert (1-delta_1) * (1+exp_eps_2) < (1-delta_2) * (1+exp_eps_1)
 
-    ratio = eps_1 / eps_2
-
-    for p in range(1, k+1):
-        for q in range(1, k+1):
-            assert ratio != p/q
-
     eps_ls = []
     delta_ls = []
 
