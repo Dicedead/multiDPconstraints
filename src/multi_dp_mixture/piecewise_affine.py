@@ -1,6 +1,8 @@
-from src.definitions import *
+from base.definitions import *
+from base.convex_function import ConvexFunction
 
-class PiecewiseAffine(TradeOffFunction):
+
+class PiecewiseAffine(ConvexFunction):
     """
     Represents a piecewise affine function.
 
@@ -204,7 +206,7 @@ class PiecewiseAffine(TradeOffFunction):
         """
         Retrieves the immutable list of slopes.
 
-        :return: Array of  slopes
+        :return: Array of slopes
         :rtype: Array
         """
         return self._slopes
@@ -217,31 +219,6 @@ class PiecewiseAffine(TradeOffFunction):
         :rtype: Array
         """
         return self._intercepts
-
-    @staticmethod
-    def weighted_infimal_convolution(weights: Array, f_arr: List['PiecewiseAffine']) -> 'PiecewiseAffine':
-        """
-        Computes the weighted infimal convolution of a list of PiecewiseAffine functions,
-        given their corresponding weights.
-
-        :param weights: Array containing the weights for the infimal convolution operation.
-        :param f_arr: List of PiecewiseAffine objects on which the weighted infimal
-            convolution is to be performed.
-        :return: Resulting PiecewiseAffine function after performing the weighted
-            infimal convolution.
-        """
-        assert len(weights) == len(f_arr)
-
-        weights = np.array(weights)
-        mask = np.argwhere(weights > 0).reshape(-1)
-        weights = [float(x) for x in weights[mask]]
-        f_arr = [f_arr[i] for i in mask]
-
-        f_star = weights[0] * f_arr[0].convex_conjugate()
-        for i in range(1, len(weights)):
-            f_star += weights[i] * f_arr[i].convex_conjugate()
-        f_mixture = f_star.convex_conjugate()
-        return f_mixture
 
 
 DIAGONAL = PiecewiseAffine([-1], [1])

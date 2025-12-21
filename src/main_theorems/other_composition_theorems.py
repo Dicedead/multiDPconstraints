@@ -1,9 +1,8 @@
-from definitions import *
+from base.definitions import *
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff
-from multi_dp_mixture.piecewise_affine import PiecewiseAffine
 
 
-def privacy_region_composition_exact(eps: float, delta: float, k: int) -> PiecewiseAffine:
+def privacy_region_composition_exact(eps: float, delta: float, k: int) -> MultiEpsDeltaTradeoff:
     """
     Compute the differential privacy composition region corresponding to the improved result for the composition
     of differentially private mechanisms.
@@ -38,7 +37,7 @@ def privacy_region_dp_composition_total_var(
         delta: float,
         eta: float,
         k: int
-) -> PiecewiseAffine:
+) -> MultiEpsDeltaTradeoff:
     """
     Compute the differential privacy composition region corresponding to the improved result for the composition
     of differentially private mechanisms, accounting for the total variation of the considered mechanisms.

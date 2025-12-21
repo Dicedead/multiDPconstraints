@@ -1,4 +1,5 @@
-from definitions import *
+from base.definitions import *
+from base.tradeoff_function import TradeOffFunction
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
 from multi_dp_mixture.piecewise_affine import PiecewiseAffine
 
@@ -86,6 +87,6 @@ def privacy_region_composition_double_dp_combinatorial(eps_1, delta_1, eps_2, de
     f_01 = SingleEpsDeltaTradeoff(0, 1)
     weight_f_intersect = (1-delta_1) ** k
 
-    return PiecewiseAffine.weighted_infimal_convolution(
+    return TradeOffFunction.weighted_infimal_convolution(
         [weight_f_intersect, 1-weight_f_intersect], [f_intersect, f_01]
     )

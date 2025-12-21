@@ -1,5 +1,6 @@
-from definitions import *
+from base.definitions import *
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
+from base.tradeoff_function import TradeOffFunction
 
 
 class SmoothTradeOffFunction(TradeOffFunction, ABC):
@@ -47,6 +48,8 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
          """
         pass
 
+    def convex_conjugate(self) -> 'TradeOffFunction':
+        raise "Convex conjugate not defined."
 
     def find_pivot_approx_above(self) -> float | None:
         return None

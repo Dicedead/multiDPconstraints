@@ -1,5 +1,5 @@
-from f_dp_approximation.tradeoff_function import SmoothTradeOffFunction
-from definitions import *
+from f_dp_approximation.smooth_tradeoff_function import SmoothTradeOffFunction
+from base.definitions import *
 
 
 class LaplaceTradeoff(SmoothTradeOffFunction):

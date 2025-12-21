@@ -1,4 +1,5 @@
-from definitions import *
+from base.definitions import *
+from base.tradeoff_function import TradeOffFunction
 from multi_dp_mixture.piecewise_affine import DIAGONAL
 
 def plot_multiple_functions(

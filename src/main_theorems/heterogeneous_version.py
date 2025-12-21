@@ -1,9 +1,10 @@
-from definitions import *
+from base.definitions import *
+from base.tradeoff_function import TradeOffFunction
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
 from multi_dp_mixture.piecewise_affine import PiecewiseAffine
 
 
-def privacy_region_composition_heterogeneous(eps_1, eps_2, x, y) -> PiecewiseAffine:
+def privacy_region_composition_heterogeneous(eps_1, eps_2, x, y) -> MultiEpsDeltaTradeoff:
     """
     Computes privacy region corresponding to the composition of x (eps_1,0)-DP mechanisms
     with y (eps_2, 0)-DP mechanisms.
@@ -63,7 +64,7 @@ def privacy_region_composition_heterogeneous(eps_1, eps_2, x, y) -> PiecewiseAff
     return MultiEpsDeltaTradeoff(eps_ls, delta_ls)
 
 
-def privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_2, delta_2, k) -> PiecewiseAffine:
+def privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_2, delta_2, k) -> TradeOffFunction:
     """
     Computes the privacy region composition of k doubly (eps,delta)-DP constrained
     mechanisms by decomposing the composition into a sum of compositions of
@@ -104,11 +105,11 @@ def privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_
 
     heterogeneous_weight = (1-delta_1) ** k
     weights = [1-heterogeneous_weight]
-    functions = [SingleEpsDeltaTradeoff(0, 1)]
+    functions: List[MultiEpsDeltaTradeoff] = [SingleEpsDeltaTradeoff(0, 1)]
 
     for i in range(0, k+1):
         weight = heterogeneous_weight * sps.comb(k, i) * ((1 - alpha) ** i) * (alpha ** (k-i))
         weights.append(weight)
         functions.append(privacy_region_composition_heterogeneous(eps_1, eps_2, i, k-i))
 
-    return PiecewiseAffine.weighted_infimal_convolution(weights, functions)
+    return TradeOffFunction.weighted_infimal_convolution(weights, functions)

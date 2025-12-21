@@ -1,6 +1,6 @@
+from base.tradeoff_function import TradeOffFunction
 from multi_dp_mixture.piecewise_affine import PiecewiseAffine
-from definitions import *
-from f_dp_approximation.tradeoff_function import TradeOffFunction
+from base.definitions import *
 
 class MultiEpsDeltaTradeoff(PiecewiseAffine, TradeOffFunction):
     def __init__(self, eps_ls: Array, delta_ls: Array):
@@ -36,7 +36,7 @@ class MultiEpsDeltaTradeoff(PiecewiseAffine, TradeOffFunction):
     def get_delta_list(self) -> Array:
         return self._delta_ls
 
-class SingleEpsDeltaTradeoff(MultiEpsDeltaTradeoff, TradeOffFunction):
+class SingleEpsDeltaTradeoff(MultiEpsDeltaTradeoff):
     def __init__(self, eps: float, delta: float):
         """
         Represents a single (epsilon, delta)-DP tradeoff curve.

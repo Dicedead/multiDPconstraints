@@ -1,13 +1,12 @@
 from f_dp_approximation.gaussian_tradeoff import GaussianTradeoff
 from f_dp_approximation.laplace_tradeoff import LaplaceTradeoff
-from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
-from multi_dp_mixture.piecewise_affine import PiecewiseAffine, DIAGONAL
-from imports import *
+from multi_dp_mixture.dp_functions import SingleEpsDeltaTradeoff
 from main_theorems.combinatorial_version import privacy_region_composition_double_dp_combinatorial
 from main_theorems.heterogeneous_version import privacy_region_composition_double_dp_heterogeneous_comp, \
     privacy_region_composition_heterogeneous
 from main_theorems.other_composition_theorems import *
-from utils import plot_multiple_functions, plot_one_function
+from base.utils import plot_multiple_functions
+from base.tradeoff_function import TradeOffFunction
 
 
 def multi_dp_test():
@@ -45,7 +44,7 @@ def first_addition_test():
     delta_2 = 0.2
     f1 = SingleEpsDeltaTradeoff(eps_1, delta_1)
     f2 = SingleEpsDeltaTradeoff(eps_2, delta_2)
-    f = PiecewiseAffine.weighted_infimal_convolution([alpha_1, alpha_2], [f1, f2])
+    f = TradeOffFunction.weighted_infimal_convolution([alpha_1, alpha_2], [f1, f2])
 
     plot_multiple_functions([f1, f2, f],
                                             [f"$({eps_1},{delta_1})$-DP",
@@ -176,7 +175,8 @@ def laplace_tradeoff_approx():
     )
 
 
-two_theorems_match()
+# double_convex_conj_is_identity_test()
+# two_theorems_match()
 # laplace_tradeoff_approx()
-# gaussian_tradeoff_approx()
+gaussian_tradeoff_approx()
 # gaussian_compos_approx()
