@@ -1,9 +1,9 @@
 from base.definitions import *
 
 
-class ConvexFunction(Callable[[Array], Array], ABC):
+class RealFunction(Callable[[Array], Array], ABC):
     """
-    Represents an abstract convex function with its convex conjugate.
+    Represents an abstract function of real parameter with its convex conjugate.
     """
 
     @abstractmethod
@@ -11,7 +11,7 @@ class ConvexFunction(Callable[[Array], Array], ABC):
         pass
 
     @abstractmethod
-    def convex_conjugate(self) -> 'ConvexFunction':
+    def convex_conjugate(self) -> 'RealFunction':
         """
         Computes the convex conjugate of the current function.
 
@@ -20,6 +20,6 @@ class ConvexFunction(Callable[[Array], Array], ABC):
 
         This is useful for computing the weighted infimal convolution.
 
-        :return: A new instance of `ConvexFunction` representing the convex conjugate.
+        :return: A new instance of `RealFunction` representing the convex conjugate.
         """
         pass

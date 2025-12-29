@@ -1,8 +1,8 @@
 from base.definitions import *
-from base.convex_function import ConvexFunction
+from base.convex_function import RealFunction
 
 
-class TradeOffFunction(ConvexFunction, ABC):
+class TradeOffFunction(RealFunction, ABC):
     """
     Represents an abstract tradeoff function.
     """

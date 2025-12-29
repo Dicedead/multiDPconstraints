@@ -1,8 +1,8 @@
 from base.definitions import *
-from base.convex_function import ConvexFunction
+from base.convex_function import RealFunction
 
 
-class PiecewiseAffine(ConvexFunction):
+class PiecewiseAffine(RealFunction):
     """
     Represents a piecewise affine function.
 
