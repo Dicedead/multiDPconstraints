@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 from base.definitions import *
 from base.tradeoff_function import TradeOffFunction
 from multi_dp_mixture.piecewise_affine import DIAGONAL
@@ -45,6 +47,7 @@ def plot_multiple_functions(
     plt.legend()
     ax.set_aspect('equal', adjustable='box')
     ax.set_autoscale_on(False)
+    plt.tight_layout()
 
     if save_to is not None:
         plt.savefig(save_to)
