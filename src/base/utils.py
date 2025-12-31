@@ -47,7 +47,8 @@ def plot_multiple_functions(
     plt.legend()
     ax.set_aspect('equal', adjustable='box')
     ax.set_autoscale_on(False)
-    plt.tight_layout()
+    plt.xlabel("Type I error")
+    plt.ylabel("Type II error")
 
     if save_to is not None:
         plt.savefig(save_to)
