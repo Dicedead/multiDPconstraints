@@ -103,12 +103,10 @@ def gaussian_tradeoff_approx():
         save_to=png("gaussian_approx")
     )
 
-def gaussian_compos_approx():
+def gaussian_compos_approx(mu, k, title):
     """
     Plot the double-DP lower and upper approximations of the gaussian trade-off composition.
     """
-    mu = 0.05
-    k = 20
     mu_composed = np.sqrt(k) * mu
     g_mu = GaussianTradeoff(mu)
     g_mu_composed = GaussianTradeoff(mu_composed)
@@ -138,7 +136,7 @@ def gaussian_compos_approx():
             "Comp. approx from below",
             "Comp. approx from above"
         ],
-        save_to=png("gaussian_compos_approx")
+        save_to=png(title)
     )
 
 def laplace_tradeoff_approx():
@@ -166,5 +164,6 @@ def laplace_tradeoff_approx():
 
 mixture_example()
 gaussian_tradeoff_approx()
-gaussian_compos_approx()
+gaussian_compos_approx(k=20, mu=0.05, title="gaussian_compos_approx")
+gaussian_compos_approx(k=4, mu=1, title="gaussian_compos_approx_2")
 main_theorem_example()
