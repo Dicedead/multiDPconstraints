@@ -4,6 +4,8 @@ This repository contains the code for the paper _Composition Theorems for Multip
 
 For usage examples, refer to ```main.py``` that contains the code resulting in the paper's plots, and ```tests.py```.
 
+---
+
 Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
 
 This work is licensed under a
