@@ -1,5 +1,5 @@
 from base.definitions import *
-from base.convex_function import RealFunction
+from base.real_function import RealFunction
 
 
 class PiecewiseAffine(RealFunction):

@@ -2,6 +2,20 @@ from base.definitions import *
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff
 
 
+def tv_of_eps_delta(eps: float, delta: float) -> float:
+    """
+    Maximum total variation of (eps,delta)-DP mechanism.
+
+    :param eps: Epsilon parameter of the differentially private mechanism.
+    :type eps: float
+    :param delta: Delta parameter of the differentially private mechanism.
+    :type delta: float
+    :return: Max total variation of the mechanism.
+    :rtype: float
+    """
+    return delta + (1-delta) * (np.exp(eps) - 1) / (np.exp(eps) + 1)
+
+
 def privacy_region_composition_exact(eps: float, delta: float, k: int) -> MultiEpsDeltaTradeoff:
     """
     Compute the differential privacy composition region corresponding to the improved result for the composition
@@ -56,6 +70,7 @@ def privacy_region_dp_composition_total_var(
     assert eps >= 0
     assert delta >= 0
     assert k >= 0
+    assert eta >= 0
 
     alpha = 1 - (eta - delta) * (1 + np.exp(eps)) / ((1 - delta) * (np.exp(eps) - 1))
 
@@ -68,7 +83,7 @@ def privacy_region_dp_composition_total_var(
                 [
                     sps.comb(k-a, l) * (((1-alpha)/(1+np.exp(eps))) ** (k-a)) * \
                     (alpha ** a) * (np.exp((k-l-a)*eps) - np.exp((l+j)*eps))
-                    for l in range(np.ceil((k-j-a)/2.))
+                    for l in range(int(np.ceil((k-j-a)/2.)))
                 ]
             )
                 for a in range(k-j)

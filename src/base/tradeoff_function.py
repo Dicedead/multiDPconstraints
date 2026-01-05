@@ -1,5 +1,5 @@
 from base.definitions import *
-from base.convex_function import RealFunction
+from base.real_function import RealFunction
 
 
 class TradeOffFunction(RealFunction, ABC):
@@ -38,3 +38,17 @@ class TradeOffFunction(RealFunction, ABC):
             f_star += weights[i] * f_arr[i].convex_conjugate()
         f_mixture = f_star.convex_conjugate()
         return f_mixture
+
+    @staticmethod
+    def intersection(f_arr: List['TradeOffFunction']) -> 'TradeOffFunction':
+
+        class IntersectedTradeoffFunction(TradeOffFunction):
+
+            def convex_conjugate(self) -> 'RealFunction':
+                # it can be implemented, but we do not need it for now
+                pass
+
+            def __call__(self, x: Array) -> Array:
+                return np.max(np.array([f(x) for f in f_arr]), axis=0)
+
+        return IntersectedTradeoffFunction()

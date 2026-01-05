@@ -41,7 +41,6 @@ class SingleEpsDeltaTradeoff(MultiEpsDeltaTradeoff):
         """
         Represents a single (epsilon, delta)-DP tradeoff curve.
 
-
         :ivar eps: The epsilon value characterising the privacy tradeoff.
         :type eps: Float
         :ivar delta: The delta value characterising the privacy tradeoff.

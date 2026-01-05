@@ -5,7 +5,8 @@ from base.utils import plot_multiple_functions
 from f_dp_approximation.gaussian_tradeoff import GaussianTradeoff
 from f_dp_approximation.laplace_tradeoff import LaplaceTradeoff
 from main_theorems.heterogeneous_version import privacy_region_composition_double_dp_heterogeneous_comp
-from main_theorems.other_composition_theorems import privacy_region_composition_exact
+from main_theorems.other_composition_theorems import (privacy_region_composition_exact, tv_of_eps_delta,
+                                                      privacy_region_dp_composition_total_var)
 from multi_dp_mixture.dp_functions import SingleEpsDeltaTradeoff, MultiEpsDeltaTradeoff
 
 
@@ -42,30 +43,103 @@ def mixture_example(alpha_1,eps_1, delta_1, eps_2, delta_2, title):
                             save_to=png(title)
                             )
 
-def main_theorem_example(eps_1, delta_1, eps_2, delta_2, k, title):
+def main_theorem_comparison(eps_1, delta_1, eps_2, delta_2, k, title):
     """
     Plot an instance of the double-DP main theorem's result compared to the corresponding
-    single-DP exact composition trade-off functions.
+    single-DP exact composition and the DPTV region.
     """
 
+    if delta_1 > delta_2:
+        delta_1, delta_2 = delta_2, delta_1
+        eps_1, eps_2 = eps_2, eps_1
+
     f1 = privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_2, delta_2, k)
-    fo = MultiEpsDeltaTradeoff([eps_1, eps_2], [delta_1, delta_2])
     f_dp_1 = privacy_region_composition_exact(eps_1, delta_1, k)
     f_dp_2 = privacy_region_composition_exact(eps_2, delta_2, k)
+    f_dp_single = TradeOffFunction.intersection([f_dp_1, f_dp_2])
+
+    induced_tv = tv_of_eps_delta(eps_2, delta_2)
+    f_dptv = privacy_region_dp_composition_total_var(eps_1, delta_1, induced_tv, k)
+    f_dptv = TradeOffFunction.intersection([f_dptv, f_dp_2])
 
     plot_multiple_functions(
         [
-         fo,
          f1,
-         f_dp_1,
-         f_dp_2
+         f_dp_single,
+         f_dptv
          ],
         [
-         f"$({eps_1},{delta_1})$ and $({eps_2},{delta_2})$ DP",
-         f"Double DP ${k}$ comp.",
-         f"$({eps_1},{delta_1})$-DP {k} comp.",
-         f"$({eps_2},{delta_2})$-DP {k} comp."
+         f"Double DP {k}-comp.",
+         f"Single DP {k}-comp",
+         f"DPTV {k}-comp"
          ],
+        save_to=png(title)
+    )
+
+def main_theorem_comparison_two_ks(eps_1, delta_1, eps_2, delta_2, k1, k2, title):
+    """
+    Plot an instance of the double-DP main theorem's result compared to the corresponding
+    single-DP exact composition and the DPTV region.
+    """
+
+    if delta_1 > delta_2:
+        delta_1, delta_2 = delta_2, delta_1
+        eps_1, eps_2 = eps_2, eps_1
+
+    f_double_dp_1 = privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_2, delta_2, k1)
+    f_double_dp_2 = privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_2, delta_2, k2)
+
+    f_dp_1_k1 = privacy_region_composition_exact(eps_1, delta_1, k1)
+    f_dp_2_k1 = privacy_region_composition_exact(eps_2, delta_2, k1)
+    f_dp_single_1 = TradeOffFunction.intersection([f_dp_1_k1, f_dp_2_k1])
+
+    f_dp_1_k2 = privacy_region_composition_exact(eps_1, delta_1, k2)
+    f_dp_2_k2 = privacy_region_composition_exact(eps_2, delta_2, k2)
+    f_dp_single_2 = TradeOffFunction.intersection([f_dp_1_k2, f_dp_2_k2])
+
+    induced_tv = tv_of_eps_delta(eps_2, delta_2)
+    f_dptv_k1 = privacy_region_dp_composition_total_var(eps_1, delta_1, induced_tv, k1)
+    f_dptv_k1 = TradeOffFunction.intersection([f_dptv_k1, f_dp_2_k1])
+    f_dptv_k2 = privacy_region_dp_composition_total_var(eps_1, delta_1, induced_tv, k2)
+    f_dptv_k2 = TradeOffFunction.intersection([f_dptv_k2, f_dp_2_k2])
+
+    plot_multiple_functions(
+        [
+         f_double_dp_1,
+         f_dp_single_1,
+         f_dptv_k1,
+         f_double_dp_2,
+         f_dp_single_2,
+         f_dptv_k2
+         ],
+        [
+         f"Double DP {k1}-comp.",
+         f"Single DP {k1}-comp",
+         f"DPTV {k1}-comp",
+         f"Double DP {k2}-comp.",
+         f"Single DP {k2}-comp",
+         f"DPTV {k2}-comp"
+         ],
+        save_to=png(title)
+    )
+
+def main_theorem_example(eps_1, delta_1, eps_2, delta_2, k_ls, title):
+    """
+    Plot an instance of the main theorem for multiple values of k.
+    """
+    if delta_1 > delta_2:
+        delta_1, delta_2 = delta_2, delta_1
+        eps_1, eps_2 = eps_2, eps_1
+
+    f_double_dp = MultiEpsDeltaTradeoff([eps_1, eps_2], [delta_1, delta_2])
+
+    f_comp = []
+    for k in k_ls:
+        f_comp.append(privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_2, delta_2, k))
+
+    plot_multiple_functions(
+        [f_double_dp] + f_comp,
+        [f"({eps_1},{delta_1}) and ({eps_2},{delta_2}) DP"] + [f"{k}-composition" for k in k_ls],
         save_to=png(title)
     )
 
@@ -88,6 +162,11 @@ def gaussian_tradeoff_approx(mu, title):
             f"${float(mu):.2}-GDP$",
             f"Approx below",
             "Approx above",
+        ],
+        [
+            "solid",
+            "dashed",
+            "dashed"
         ],
         save_to=png(title)
     )
@@ -125,6 +204,115 @@ def gaussian_compos_approx(mu, k, title):
             "Comp. approx from below",
             "Comp. approx from above"
         ],
+        [
+            "solid",
+            "dashed",
+            "dashed"
+        ],
+        save_to=png(title)
+    )
+
+def gaussian_tradeoff_and_compos_approx(mu, k, title):
+    """
+    Plot the double-DP lower and upper approximations of the gaussian trade-off composition as well as
+    the gaussian tradeoff function itself.
+    """
+    mu_composed = np.sqrt(k) * mu
+    g_mu = GaussianTradeoff(mu)
+    g_mu_composed = GaussianTradeoff(mu_composed)
+    g_mu_approx_below = g_mu.approx_from_below()
+    g_mu_approx_above = g_mu.approx_from_above()
+
+    eps_ls = g_mu_approx_below.get_eps_list()
+    delta_ls = g_mu_approx_below.get_delta_list()
+    g_mu_composed_below = privacy_region_composition_double_dp_heterogeneous_comp(
+        eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k
+    )
+
+    eps_ls = g_mu_approx_above.get_eps_list()
+    delta_ls = g_mu_approx_above.get_delta_list()
+    g_mu_composed_above = privacy_region_composition_double_dp_heterogeneous_comp(
+        eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k
+    )
+
+    plot_multiple_functions(
+        [
+            g_mu,
+            g_mu_approx_below,
+            g_mu_approx_above,
+            g_mu_composed,
+            g_mu_composed_below,
+            g_mu_composed_above
+        ],
+        [
+            f"${float(mu):.2}-GDP$",
+            f"Lower approx of ${float(mu):.2}-GDP$",
+            f"Upper approx of ${float(mu):.2}-GDP$",
+            f"${float(mu_composed):.2}$-GDP ({k}-composition of ${float(mu):.2}$-GDP)",
+            f"{k}-comp. approx from below",
+            f"{k}-comp. approx from above"
+        ],
+        [
+            "solid",
+            "dashed",
+            "dashed",
+            "solid",
+            "dashed",
+            "dashed"
+        ],
+        save_to=png(title)
+    )
+
+def gaussian_compos_approx_two_compos(mu, k1, k2, title):
+    """
+    Plot the double-DP lower and upper approximations of the gaussian trade-off composition for 2 values of k.
+    """
+    mu_composed_k1 = np.sqrt(k1) * mu
+    mu_composed_k2 = np.sqrt(k2) * mu
+
+    g_mu = GaussianTradeoff(mu)
+
+    g_mu_composed_k1 = GaussianTradeoff(mu_composed_k1)
+    g_mu_composed_k2 = GaussianTradeoff(mu_composed_k2)
+
+    g_mu_approx_below = g_mu.approx_from_below()
+    g_mu_approx_above = g_mu.approx_from_above()
+
+    eps_ls = g_mu_approx_below.get_eps_list()
+    delta_ls = g_mu_approx_below.get_delta_list()
+    g_mu_composed_below = privacy_region_composition_double_dp_heterogeneous_comp(
+        eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k1
+    )
+    g_mu_composed_below_2 = privacy_region_composition_double_dp_heterogeneous_comp(
+        eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k2
+    )
+
+    eps_ls = g_mu_approx_above.get_eps_list()
+    delta_ls = g_mu_approx_above.get_delta_list()
+    g_mu_composed_above = privacy_region_composition_double_dp_heterogeneous_comp(
+        eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k1
+    )
+    g_mu_composed_above_2 = privacy_region_composition_double_dp_heterogeneous_comp(
+        eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k2
+    )
+
+    plot_multiple_functions(
+        [
+            g_mu_composed_k1,
+            g_mu_composed_below,
+            g_mu_composed_above,
+            g_mu_composed_k2,
+            g_mu_composed_below_2,
+            g_mu_composed_above_2
+        ],
+        [
+            f"${float(mu_composed_k1):.2}$-GDP ({k1}-composition of ${float(mu):.2}$-GDP)",
+            f"{k1}-comp. approx from below",
+            f"{k1}-comp. approx from above",
+            f"${float(mu_composed_k2):.2}$-GDP ({k2}-composition of ${float(mu):.2}$-GDP)",
+            f"{k2}-comp. approx from below",
+            f"{k2}-comp. approx from above",
+        ],
         save_to=png(title)
     )
 
@@ -154,5 +342,15 @@ if __name__ == "__main__":
     mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
     gaussian_tradeoff_approx(mu=1, title="gaussian_approx")
     gaussian_compos_approx(k=20, mu=0.05, title="gaussian_compos_approx")
-    gaussian_compos_approx(k=4, mu=1, title="gaussian_compos_approx_2")
-    main_theorem_example(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k = 3, title="theorem_1_example")
+    gaussian_compos_approx(k=3, mu=1, title="gaussian_compos_approx_2")
+    gaussian_compos_approx_two_compos(k1=10, k2=3, mu=1, title="gaussian_2_compos")
+    gaussian_tradeoff_and_compos_approx(k=3, mu=1, title="gaussian_tradeoff_and_compos_approx")
+    main_theorem_comparison(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k = 3, title="theorem_1_comparison")
+    main_theorem_example(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k_ls = [2, 3, 10, 20],
+                         title="theorem_1_example")
+    main_theorem_example(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k_ls = [2, 3, 10, 20],
+                         title="theorem_1_example_small_region")
+    main_theorem_comparison_two_ks(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2,
+                                   k1=3, k2=10, title="theorem_1_comparison_two_ks")
+    main_theorem_comparison_two_ks(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k1=3, k2=20,
+                                  title="theorem_1_comparison_two_ks_small_region")

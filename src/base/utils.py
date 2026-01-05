@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-
 from base.definitions import *
 from base.tradeoff_function import TradeOffFunction
 from multi_dp_mixture.piecewise_affine import DIAGONAL
@@ -7,6 +5,7 @@ from multi_dp_mixture.piecewise_affine import DIAGONAL
 def plot_multiple_functions(
         f_arr: List[TradeOffFunction],
         labels: List[str],
+        linestyles: List[str] = None,
         start=0,
         end=1,
         num_points=100,
@@ -22,6 +21,8 @@ def plot_multiple_functions(
     :param labels: A list of labels corresponding to each function in f_arr,
                    which will be used for the plot's legend.
     :type labels: List[str]
+    :param linestyles: A list of linestyles to be used for each function in f_arr.
+    :type linestyles: List[str], optional. Defaults to solid style for all functions.
     :param start: First point to plot. Defaults to 0.
     :type start: float, optional
     :param end: Last point to plot. Defaults to 1.
@@ -37,18 +38,21 @@ def plot_multiple_functions(
     """
     assert len(f_arr) == len(labels)
 
+    if linestyles is None:
+        linestyles = ["solid"] * len(f_arr)
+
     x = np.linspace(start, end, num_points)
     fig = plt.figure()
     ax = fig.add_subplot()
-    for f, label in zip(f_arr, labels):
-        plt.plot(x, f(x), label=label)
+    for f, label, linestyle in zip(f_arr, labels, linestyles):
+        plt.plot(x, f(x), label=label, linestyle=linestyle)
 
     plt.plot(x, DIAGONAL(x), "k--")
     plt.legend()
     ax.set_aspect('equal', adjustable='box')
     ax.set_autoscale_on(False)
-    plt.xlabel("Type I error")
-    plt.ylabel("Type II error")
+    plt.xlabel("$\\beta_I$")
+    plt.ylabel("$\\beta_{II}}$")
 
     if save_to is not None:
         plt.savefig(save_to)
