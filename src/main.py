@@ -58,7 +58,7 @@ def heterogeneous_comparison(eps_1, eps_2, x, y, delta_slack_ls, title):
 
     plot_multiple_functions(
         [f_ours, f_approx],
-        [f"Our DP", f"Approximation"],
+        [f"Theorem 1", f"Prior work"],
         save_to=png(title)
     )
 
