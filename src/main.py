@@ -4,9 +4,11 @@ from base.tradeoff_function import TradeOffFunction
 from base.utils import plot_multiple_functions
 from f_dp_approximation.gaussian_tradeoff import GaussianTradeoff
 from f_dp_approximation.laplace_tradeoff import LaplaceTradeoff
-from main_theorems.heterogeneous_version import privacy_region_composition_double_dp_heterogeneous_comp
+from main_theorems.heterogeneous_version import privacy_region_composition_double_dp_heterogeneous_comp, \
+    privacy_region_composition_heterogeneous
 from main_theorems.other_composition_theorems import (privacy_region_composition_exact, tv_of_eps_delta,
-                                                      privacy_region_dp_composition_total_var)
+                                                      privacy_region_dp_composition_total_var,
+                                                      privacy_region_approx_heterogeneous_composition_multi_slacks)
 from multi_dp_mixture.dp_functions import SingleEpsDeltaTradeoff, MultiEpsDeltaTradeoff
 
 
@@ -36,12 +38,20 @@ def mixture_example(alpha_1,eps_1, delta_1, eps_2, delta_2, title):
     f = TradeOffFunction.weighted_infimal_convolution([alpha_1, alpha_2], [f1, f2])
 
     plot_multiple_functions([f1, f2, f],
-                                            [f"$({eps_1},{delta_1})$-DP",
+                                            [
+                                             f"$({eps_1},{delta_1})$-DP",
                                              f"$({eps_2},{delta_2})$-DP",
                                              f"Mixture, weights ({alpha_1}, {alpha_2})"
                                              ],
                             save_to=png(title)
                             )
+
+def heterogeneous_comparison(eps_1, eps_2, x, y, delta_slack_ls):
+    f_ours = privacy_region_composition_heterogeneous(eps_1, eps_2, x, y)
+    f_approx = privacy_region_approx_heterogeneous_composition_multi_slacks([eps_1, eps_2], [0, 0],
+                                                                            delta_slack_ls)
+
+    plot_multiple_functions([f_ours, f_approx], [f"Our DP", f"Approximation"])
 
 def main_theorem_comparison(eps_1, delta_1, eps_2, delta_2, k, title):
     """
@@ -69,9 +79,9 @@ def main_theorem_comparison(eps_1, delta_1, eps_2, delta_2, k, title):
          f_dptv
          ],
         [
-         f"Double DP {k}-comp.",
-         f"Single DP {k}-comp",
-         f"DPTV {k}-comp"
+         f"Theorems 2-3, $k = {k}$",
+         f"Remark 1, $k = {k}$",
+         f"Remark 2, $k = {k}$"
          ],
         save_to=png(title)
     )
@@ -208,9 +218,9 @@ def gaussian_compos_approx(mu, k, title):
             g_mu_composed_above
         ],
         [
-            f"{float(mu_composed):.2}-GDP ({k}-composition of {float(mu):.2}-GDP)",
-            "Comp. approx from below",
-            "Comp. approx from above"
+            f"{k}-composition of {float(mu):.2}-GDP",
+            f"{k}-comp. lower approx",
+            f"{k}-comp. upper approx"
         ],
         [
             "solid",

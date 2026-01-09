@@ -1,5 +1,6 @@
 from base.definitions import *
-from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff
+from base.tradeoff_function import TradeOffFunction
+from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
 
 
 def tv_of_eps_delta(eps: float, delta: float) -> float:
@@ -64,8 +65,8 @@ def privacy_region_dp_composition_total_var(
     :type eta: float
     :param k: Number of composed mechanisms.
     :type k: int
-    :return: Piecewise affine function representing the composition region.
-    :rtype: PiecewiseAffine
+    :return: Piecewise affine function representing the multi-DP constrained composition region.
+    :rtype: MultiEpsDeltaTradeoff
     """
     assert eps >= 0
     assert delta >= 0
@@ -95,3 +96,46 @@ def privacy_region_dp_composition_total_var(
 
 
     return MultiEpsDeltaTradeoff(eps_ls, delta_ls)
+
+def privacy_region_approx_heterogeneous_composition(
+        eps_ls: Array,
+        delta_ls: Array,
+        delta_slack: float
+) -> SingleEpsDeltaTradeoff:
+    """
+    Compute the differential privacy composition region corresponding to the improved then simplified result for the composition
+    of differentially private mechanisms.
+
+    :param eps_ls: Epsilon parameters of the differentially private mechanisms being composed.
+    :type eps_ls: Array
+
+    :param delta_ls: Delta parameters of the differentially private mechanisms being composed.
+    :type delta_ls: Array
+
+    :param delta_slack: Additional delta slackness.
+    :type delta_slack: float
+
+    :return: Piecewise affine function representing the DP constrained composition region.
+    :rtype: SingleEpsDeltaTradeoff
+    """
+    sum_eps = np.array(eps_ls).sum()
+    sum_eps_sq = (np.array(eps_ls) ** 2).sum()
+    exp_sum = np.sum(((np.exp(eps_ls) - 1) * eps_ls)/(np.exp(eps_ls) + 1))
+    delta_ls = np.array(delta_ls)
+
+    delta = 1 - (1 - delta_slack) * np.prod(1. - delta_ls)
+
+    eps_opt1 = sum_eps
+    eps_opt2 = exp_sum + np.sqrt(-2 * np.log(delta_slack) * sum_eps_sq)
+    eps_opt3 = exp_sum + np.sqrt(2 * np.log(np.e + np.sqrt(sum_eps_sq) / delta_slack) * sum_eps_sq)
+
+    return SingleEpsDeltaTradeoff(min(eps_opt1, eps_opt2, eps_opt3), delta)
+
+def privacy_region_approx_heterogeneous_composition_multi_slacks(
+        eps_ls: Array,
+        delta_ls: Array,
+        delta_slack_ls: Array
+) -> TradeOffFunction:
+    return TradeOffFunction.intersection([privacy_region_heterogeneous_composition(
+        eps_ls, delta_ls, delta_s
+    ) for delta_s in delta_slack_ls])
