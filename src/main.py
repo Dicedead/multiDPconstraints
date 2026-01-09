@@ -113,13 +113,21 @@ def main_theorem_comparison_two_ks(eps_1, delta_1, eps_2, delta_2, k1, k2, title
          f_dptv_k2
          ],
         [
-         f"Double DP {k1}-comp.",
-         f"Single DP {k1}-comp",
-         f"DPTV {k1}-comp",
-         f"Double DP {k2}-comp.",
-         f"Single DP {k2}-comp",
-         f"DPTV {k2}-comp"
+         f"Theorems 2-3, $k = {k1}$",
+         f"Remark 1, $k = {k1}$",
+         f"Remark 2, $k = {k1}$",
+         f"Theorems 2-3, $k = {k2}$",
+         f"Remark 1, $k = {k2}$",
+         f"Remark 2, $k = {k2}$"
          ],
+        [
+            "solid",
+            "dashed",
+            "dashed",
+            "solid",
+            "dashed",
+            "dashed",
+        ],
         save_to=png(title)
     )
 
@@ -159,7 +167,7 @@ def gaussian_tradeoff_approx(mu, title):
             g_mu_approx_above,
         ],
         [
-            f"${float(mu):.2}-GDP$",
+            f"{float(mu):.2}-GDP",
             f"Approx below",
             "Approx above",
         ],
@@ -200,7 +208,7 @@ def gaussian_compos_approx(mu, k, title):
             g_mu_composed_above
         ],
         [
-            f"${float(mu_composed):.2}$-GDP ({k}-composition of ${float(mu):.2}$-GDP)",
+            f"{float(mu_composed):.2}-GDP ({k}-composition of {float(mu):.2}-GDP)",
             "Comp. approx from below",
             "Comp. approx from above"
         ],
@@ -245,12 +253,12 @@ def gaussian_tradeoff_and_compos_approx(mu, k, title):
             g_mu_composed_above
         ],
         [
-            f"${float(mu):.2}-GDP$",
-            f"Lower approx of ${float(mu):.2}-GDP$",
-            f"Upper approx of ${float(mu):.2}-GDP$",
-            f"${float(mu_composed):.2}$-GDP ({k}-composition of ${float(mu):.2}$-GDP)",
-            f"{k}-comp. approx from below",
-            f"{k}-comp. approx from above"
+            f"{float(mu):.2}-GDP",
+            f"Lower approx of {float(mu):.2}-GDP",
+            f"Upper approx of {float(mu):.2}-GDP",
+            f"{float(mu_composed):.2}-GDP ({k}-comp. of {float(mu):.2}-GDP)",
+            f"{k}-comp. lower approx",
+            f"{k}-comp. upper approx"
         ],
         [
             "solid",
@@ -306,15 +314,96 @@ def gaussian_compos_approx_two_compos(mu, k1, k2, title):
             g_mu_composed_above_2
         ],
         [
-            f"${float(mu_composed_k1):.2}$-GDP ({k1}-composition of ${float(mu):.2}$-GDP)",
-            f"{k1}-comp. approx from below",
-            f"{k1}-comp. approx from above",
-            f"${float(mu_composed_k2):.2}$-GDP ({k2}-composition of ${float(mu):.2}$-GDP)",
-            f"{k2}-comp. approx from below",
-            f"{k2}-comp. approx from above",
+            f"{k1}-composition of {float(mu):.2}-GDP",
+            f"{k1}-comp. lower approx",
+            f"{k1}-comp. upper approx",
+            f"{k2}-composition of {float(mu):.2}-GDP",
+            f"{k2}-comp. lower approx",
+            f"{k2}-comp. upper approx",
+        ],
+        [
+            "solid",
+            "dashed",
+            "dashed",
+            "solid",
+            "dashed",
+            "dashed"
         ],
         save_to=png(title)
     )
+
+
+def gaussian_compos_approx_tradeoff_and_two_compos(mu, k1, k2, title):
+    """
+    Plot the double-DP lower and upper approximations of the gaussian trade-off composition for 2 values of k
+    along with the approximation of the gaussian trade_off itself.
+    """
+    mu_composed_k1 = np.sqrt(k1) * mu
+    mu_composed_k2 = np.sqrt(k2) * mu
+
+    g_mu = GaussianTradeoff(mu)
+
+    g_mu_composed_k1 = GaussianTradeoff(mu_composed_k1)
+    g_mu_composed_k2 = GaussianTradeoff(mu_composed_k2)
+
+    g_mu_approx_below = g_mu.approx_from_below()
+    g_mu_approx_above = g_mu.approx_from_above()
+
+    eps_ls = g_mu_approx_below.get_eps_list()
+    delta_ls = g_mu_approx_below.get_delta_list()
+    g_mu_composed_below = privacy_region_composition_double_dp_heterogeneous_comp(
+        eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k1
+    )
+    g_mu_composed_below_2 = privacy_region_composition_double_dp_heterogeneous_comp(
+        eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k2
+    )
+
+    eps_ls = g_mu_approx_above.get_eps_list()
+    delta_ls = g_mu_approx_above.get_delta_list()
+    g_mu_composed_above = privacy_region_composition_double_dp_heterogeneous_comp(
+        eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k1
+    )
+    g_mu_composed_above_2 = privacy_region_composition_double_dp_heterogeneous_comp(
+        eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k2
+    )
+
+    plot_multiple_functions(
+        [
+            g_mu,
+            g_mu_approx_below,
+            g_mu_approx_above,
+            g_mu_composed_k1,
+            g_mu_composed_below,
+            g_mu_composed_above,
+            g_mu_composed_k2,
+            g_mu_composed_below_2,
+            g_mu_composed_above_2
+        ],
+        [
+            f"{float(mu):.2}-GDP",
+            f"Lower approx of {float(mu):.2}-GDP",
+            f"Upper approx of {float(mu):.2}-GDP",
+            f"{k1}-composition of {float(mu):.2}-GDP",
+            f"{k1}-comp. lower approx",
+            f"{k1}-comp. upper approx",
+            f"{k2}-composition of {float(mu):.2}-GDP",
+            f"{k2}-comp. lower approx",
+            f"{k2}-comp. upper approx",
+        ],
+        [
+            "solid",
+            "dashed",
+            "dashed",
+            "solid",
+            "dashed",
+            "dashed",
+            "solid",
+            "dashed",
+            "dashed"
+        ],
+        save_to=png(title)
+    )
+
 
 def laplace_tradeoff_approx(eps, title):
     """
@@ -330,7 +419,7 @@ def laplace_tradeoff_approx(eps, title):
             laps_eps_approx_above
         ],
         [
-            f"$Laplace({eps})-DP$",
+            f"Laplace({eps})-DP",
             "Approx below",
             "Approx above",
         ],
@@ -354,3 +443,4 @@ if __name__ == "__main__":
                                    k1=3, k2=10, title="theorem_1_comparison_two_ks")
     main_theorem_comparison_two_ks(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k1=3, k2=20,
                                   title="theorem_1_comparison_two_ks_small_region")
+    gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=1, title="gaussian_tradeoff_and_2_compos")
