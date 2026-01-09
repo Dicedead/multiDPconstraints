@@ -46,12 +46,21 @@ def mixture_example(alpha_1,eps_1, delta_1, eps_2, delta_2, title):
                             save_to=png(title)
                             )
 
-def heterogeneous_comparison(eps_1, eps_2, x, y, delta_slack_ls):
+def heterogeneous_comparison(eps_1, eps_2, x, y, delta_slack_ls, title):
+    """
+    Plot the approximation of the heterogeneous composition of two single-DP mechanisms compared to
+    the exact region.
+    """
     f_ours = privacy_region_composition_heterogeneous(eps_1, eps_2, x, y)
-    f_approx = privacy_region_approx_heterogeneous_composition_multi_slacks([eps_1, eps_2], [0, 0],
-                                                                            delta_slack_ls)
+    eps_ls = [eps_1] * x + [eps_2] * y
+    delta_ls = [0] * (x+y)
+    f_approx = privacy_region_approx_heterogeneous_composition_multi_slacks(eps_ls, delta_ls, delta_slack_ls)
 
-    plot_multiple_functions([f_ours, f_approx], [f"Our DP", f"Approximation"])
+    plot_multiple_functions(
+        [f_ours, f_approx],
+        [f"Our DP", f"Approximation"],
+        save_to=png(title)
+    )
 
 def main_theorem_comparison(eps_1, delta_1, eps_2, delta_2, k, title):
     """
@@ -438,6 +447,7 @@ def laplace_tradeoff_approx(eps, title):
 
 
 if __name__ == "__main__":
+    heterogeneous_comparison(eps_1=0.6,eps_2=0.4,x=3,y=2,delta_slack_ls=[0.001], title="heterogeneous_comparison")
     mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
     gaussian_tradeoff_approx(mu=1, title="gaussian_approx")
     gaussian_compos_approx(k=20, mu=0.05, title="gaussian_compos_approx")

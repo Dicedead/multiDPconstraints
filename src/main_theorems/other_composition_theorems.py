@@ -136,6 +136,6 @@ def privacy_region_approx_heterogeneous_composition_multi_slacks(
         delta_ls: Array,
         delta_slack_ls: Array
 ) -> TradeOffFunction:
-    return TradeOffFunction.intersection([privacy_region_heterogeneous_composition(
+    return TradeOffFunction.intersection([privacy_region_approx_heterogeneous_composition(
         eps_ls, delta_ls, delta_s
     ) for delta_s in delta_slack_ls])
