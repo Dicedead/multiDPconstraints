@@ -1,7 +1,7 @@
 import numpy as np
 
 from base.tradeoff_function import TradeOffFunction
-from base.utils import plot_multiple_functions
+from base.utils import plot_multiple_functions, COLOR_1, COLOR_2, COLOR_3
 from f_dp_approximation.gaussian_tradeoff import GaussianTradeoff
 from f_dp_approximation.laplace_tradeoff import LaplaceTradeoff
 from main_theorems.heterogeneous_version import privacy_region_composition_double_dp_heterogeneous_comp, \
@@ -11,6 +11,8 @@ from main_theorems.other_composition_theorems import (privacy_region_composition
                                                       privacy_region_approx_heterogeneous_composition_multi_slacks)
 from multi_dp_mixture.dp_functions import SingleEpsDeltaTradeoff, MultiEpsDeltaTradeoff
 
+
+dotted_custom = (0, (1, 1))
 
 def png(title: str, plots_folder: str = "../plots/") -> str:
     """
@@ -43,6 +45,11 @@ def mixture_example(alpha_1,eps_1, delta_1, eps_2, delta_2, title):
                                              f"$({eps_2},{delta_2})$-DP",
                                              f"Mixture, weights ({alpha_1}, {alpha_2})"
                                              ],
+                            [
+                                dotted_custom,
+                                dotted_custom,
+                                "solid"
+                            ],
                             save_to=png(title)
                             )
 
@@ -125,27 +132,35 @@ def main_theorem_comparison_two_ks(eps_1, delta_1, eps_2, delta_2, k1, k2, title
     plot_multiple_functions(
         [
          f_double_dp_1,
-         f_dp_single_1,
          f_dptv_k1,
+         f_dp_single_1,
          f_double_dp_2,
-         f_dp_single_2,
-         f_dptv_k2
+         f_dptv_k2,
+         f_dp_single_2
          ],
         [
          f"Theorems 2-3, $k = {k1}$",
-         f"Remark 1, $k = {k1}$",
          f"Remark 2, $k = {k1}$",
+         f"Remark 1, $k = {k1}$",
          f"Theorems 2-3, $k = {k2}$",
-         f"Remark 1, $k = {k2}$",
-         f"Remark 2, $k = {k2}$"
+         f"Remark 2, $k = {k2}$",
+         f"Remark 1, $k = {k2}$"
          ],
         [
             "solid",
             "dashed",
-            "dashed",
+            dotted_custom,
             "solid",
             "dashed",
-            "dashed",
+            dotted_custom,
+        ],
+        [
+          COLOR_1,
+          COLOR_1,
+          COLOR_1,
+          COLOR_2,
+          COLOR_2,
+          COLOR_2,
         ],
         save_to=png(title)
     )
@@ -389,37 +404,32 @@ def gaussian_compos_approx_tradeoff_and_two_compos(mu, k1, k2, title):
     plot_multiple_functions(
         [
             g_mu,
-            g_mu_approx_below,
             g_mu_approx_above,
+            g_mu_approx_below,
             g_mu_composed_k1,
-            g_mu_composed_below,
             g_mu_composed_above,
+            g_mu_composed_below,
             g_mu_composed_k2,
+            g_mu_composed_above_2,
             g_mu_composed_below_2,
-            g_mu_composed_above_2
         ],
         [
             f"{float(mu):.2}-GDP",
-            f"Lower approx of {float(mu):.2}-GDP",
             f"Upper approx of {float(mu):.2}-GDP",
+            f"Lower approx of {float(mu):.2}-GDP",
             f"{k1}-composition of {float(mu):.2}-GDP",
-            f"{k1}-comp. lower approx",
             f"{k1}-comp. upper approx",
+            f"{k1}-comp. lower approx",
             f"{k2}-composition of {float(mu):.2}-GDP",
-            f"{k2}-comp. lower approx",
             f"{k2}-comp. upper approx",
+            f"{k2}-comp. lower approx",
         ],
         [
             "solid",
+            dotted_custom,
             "dashed",
-            "dashed",
-            "solid",
-            "dashed",
-            "dashed",
-            "solid",
-            "dashed",
-            "dashed"
-        ],
+        ] * 3,
+        [COLOR_1] * 3 + [COLOR_2] * 3 + [COLOR_3] * 3,
         save_to=png(title)
     )
 
@@ -464,3 +474,5 @@ if __name__ == "__main__":
     main_theorem_comparison_two_ks(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k1=3, k2=20,
                                   title="theorem_1_comparison_two_ks_small_region")
     gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=1, title="gaussian_tradeoff_and_2_compos")
+    gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=0.05, title="gaussian_tradeoff_and_2_compos_small")
+    gaussian_tradeoff_and_compos_approx(mu=0.05, k=3, title="gaussian_tradeoff_and_compos_approx_small_single_reg")
