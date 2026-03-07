@@ -2,8 +2,9 @@ import numpy as np
 
 from base.tradeoff_function import TradeOffFunction
 from base.utils import plot_multiple_functions, COLOR_1, COLOR_2, COLOR_3
-from f_dp_approximation.gaussian_tradeoff import GaussianTradeoff
-from f_dp_approximation.laplace_tradeoff import LaplaceTradeoff
+from f_dp_approximation.approximations import multi_dp_approx_above
+from f_dp_approximation.smooth_approximation.gaussian_tradeoff import GaussianTradeoff
+from f_dp_approximation.smooth_approximation.laplace_tradeoff import LaplaceTradeoff
 from main_theorems.heterogeneous_version import privacy_region_composition_double_dp_heterogeneous_comp, \
     privacy_region_composition_heterogeneous
 from main_theorems.other_composition_theorems import (privacy_region_composition_exact, tv_of_eps_delta,
@@ -46,8 +47,8 @@ def mixture_example(alpha_1,eps_1, delta_1, eps_2, delta_2, title):
                                              f"Mixture, weights ({alpha_1}, {alpha_2})"
                                              ],
                             [
-                                dotted_custom,
-                                dotted_custom,
+                                "dashed",
+                                "dashed",
                                 "solid"
                             ],
                             save_to=png(title)
@@ -192,8 +193,8 @@ def gaussian_tradeoff_approx(mu, title):
     function.
     """
     g_mu = GaussianTradeoff(mu)
-    g_mu_approx_below = g_mu.approx_from_below()
-    g_mu_approx_above = g_mu.approx_from_above()
+    g_mu_approx_below = g_mu.approx_from_below_2_dp()
+    g_mu_approx_above = g_mu.approx_from_above_2_dp()
     plot_multiple_functions(
         [
             g_mu,
@@ -220,8 +221,8 @@ def gaussian_compos_approx(mu, k, title):
     mu_composed = np.sqrt(k) * mu
     g_mu = GaussianTradeoff(mu)
     g_mu_composed = GaussianTradeoff(mu_composed)
-    g_mu_approx_below = g_mu.approx_from_below()
-    g_mu_approx_above = g_mu.approx_from_above()
+    g_mu_approx_below = g_mu.approx_from_below_2_dp()
+    g_mu_approx_above = g_mu.approx_from_above_2_dp()
 
     eps_ls = g_mu_approx_below.get_eps_list()
     delta_ls = g_mu_approx_below.get_delta_list()
@@ -262,8 +263,8 @@ def gaussian_tradeoff_and_compos_approx(mu, k, title):
     mu_composed = np.sqrt(k) * mu
     g_mu = GaussianTradeoff(mu)
     g_mu_composed = GaussianTradeoff(mu_composed)
-    g_mu_approx_below = g_mu.approx_from_below()
-    g_mu_approx_above = g_mu.approx_from_above()
+    g_mu_approx_below = g_mu.approx_from_below_2_dp()
+    g_mu_approx_above = g_mu.approx_from_above_2_dp()
 
     eps_ls = g_mu_approx_below.get_eps_list()
     delta_ls = g_mu_approx_below.get_delta_list()
@@ -317,8 +318,8 @@ def gaussian_compos_approx_two_compos(mu, k1, k2, title):
     g_mu_composed_k1 = GaussianTradeoff(mu_composed_k1)
     g_mu_composed_k2 = GaussianTradeoff(mu_composed_k2)
 
-    g_mu_approx_below = g_mu.approx_from_below()
-    g_mu_approx_above = g_mu.approx_from_above()
+    g_mu_approx_below = g_mu.approx_from_below_2_dp()
+    g_mu_approx_above = g_mu.approx_from_above_2_dp()
 
     eps_ls = g_mu_approx_below.get_eps_list()
     delta_ls = g_mu_approx_below.get_delta_list()
@@ -380,8 +381,8 @@ def gaussian_compos_approx_tradeoff_and_two_compos(mu, k1, k2, title):
     g_mu_composed_k1 = GaussianTradeoff(mu_composed_k1)
     g_mu_composed_k2 = GaussianTradeoff(mu_composed_k2)
 
-    g_mu_approx_below = g_mu.approx_from_below()
-    g_mu_approx_above = g_mu.approx_from_above()
+    g_mu_approx_below = g_mu.approx_from_below_2_dp()
+    g_mu_approx_above = g_mu.approx_from_above_2_dp()
 
     eps_ls = g_mu_approx_below.get_eps_list()
     delta_ls = g_mu_approx_below.get_delta_list()
@@ -439,8 +440,8 @@ def laplace_tradeoff_approx(eps, title):
     Plot the double-DP lower and upper approximations of the Laplace trade-off composition.
     """
     laplace_eps = LaplaceTradeoff(eps)
-    lap_eps_approx_below = laplace_eps.approx_from_below()
-    laps_eps_approx_above = laplace_eps.approx_from_above()
+    lap_eps_approx_below = laplace_eps.approx_from_below_2_dp()
+    laps_eps_approx_above = laplace_eps.approx_from_above_2_dp()
     plot_multiple_functions(
         [
             laplace_eps,
@@ -451,6 +452,38 @@ def laplace_tradeoff_approx(eps, title):
             f"Laplace({eps})-DP",
             "Approx below",
             "Approx above",
+        ],
+        save_to=png(title)
+    )
+
+def smooth_vs_nonsmooth_above_2dp_approx_gaussian(mu, title):
+    """
+    Compare 2-DP approximations of GDP, assuming smoothness vs not assuming smoothness.
+    """
+    gaussian = GaussianTradeoff(mu)
+    smooth_approx = gaussian.approx_from_above_2_dp()
+    nonsmooth_approx = multi_dp_approx_above(gaussian, 2)
+
+    plot_multiple_functions(
+        [
+            gaussian,
+            nonsmooth_approx,
+            smooth_approx
+        ],
+        [
+            "Gaussian",
+            "Non-smooth Approx",
+            "Smooth Approx"
+        ],
+        [
+            "solid",
+            "dashed",
+            "dotted"
+        ],
+        [
+            COLOR_1,
+            COLOR_2,
+            COLOR_3
         ],
         save_to=png(title)
     )
@@ -476,3 +509,4 @@ if __name__ == "__main__":
     gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=1, title="gaussian_tradeoff_and_2_compos")
     gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=0.05, title="gaussian_tradeoff_and_2_compos_small")
     gaussian_tradeoff_and_compos_approx(mu=0.05, k=3, title="gaussian_tradeoff_and_compos_approx_small_single_reg")
+    smooth_vs_nonsmooth_above_2dp_approx_gaussian(mu=1, title="smooth_vs_nonsmooth_2dp_approx_gaussian_above")

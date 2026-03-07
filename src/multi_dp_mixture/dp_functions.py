@@ -3,6 +3,7 @@ from multi_dp_mixture.piecewise_affine import PiecewiseAffine
 from base.definitions import *
 
 class MultiEpsDeltaTradeoff(PiecewiseAffine, TradeOffFunction):
+
     def __init__(self, eps_ls: Array, delta_ls: Array):
         """
         Represents the tradeoff function of a mechanism with multiple (epsilon, delta)-DP constraints.
@@ -30,11 +31,28 @@ class MultiEpsDeltaTradeoff(PiecewiseAffine, TradeOffFunction):
 
         super().__init__(slopes, intercepts, domain_start=0., domain_end=1., bounded=True)
 
+        self._fixed_point = self.__compute_fixed_point()
+
     def get_eps_list(self) -> Array:
         return self._eps_ls
 
     def get_delta_list(self) -> Array:
         return self._delta_ls
+
+    def fixed_point(self) -> float:
+        return self._fixed_point
+
+    def __compute_fixed_point(self) -> float:
+        candidates = self._intercepts / (1 - self._slopes)
+        values = np.abs(self(candidates) - candidates)
+        return candidates[np.argmin(values)]
+
+    @staticmethod
+    def from_slopes_and_offsets(slopes: Array, offsets: Array) -> 'MultiEpsDeltaTradeoff':
+        return MultiEpsDeltaTradeoff(
+            np.log(-np.array(slopes)),
+            1-np.array(offsets)
+        )
 
 class SingleEpsDeltaTradeoff(MultiEpsDeltaTradeoff):
     def __init__(self, eps: float, delta: float):

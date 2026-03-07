@@ -1,4 +1,4 @@
-from f_dp_approximation.smooth_tradeoff_function import SmoothTradeOffFunction
+from base.smooth_tradeoff_function import SmoothTradeOffFunction
 from base.definitions import *
 
 

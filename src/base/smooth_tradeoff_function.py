@@ -135,7 +135,7 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
          """
         return 1 - np.sqrt(2) * beta/(alpha + 1)
 
-    def approx_from_below(self, g: 'NormalRotation' = None) -> MultiEpsDeltaTradeoff:
+    def approx_from_below_2_dp(self, g: 'NormalRotation' = None) -> MultiEpsDeltaTradeoff:
         """
         Compute an approximation from below for the given tradeoff function.
 
@@ -174,7 +174,7 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
 
         return MultiEpsDeltaTradeoff([eps_1, eps_2], [delta_1, delta_2])
 
-    def approx_from_above(self) -> MultiEpsDeltaTradeoff:
+    def approx_from_above_2_dp(self) -> MultiEpsDeltaTradeoff:
         """
         Computes an approximation from above for the tradeoff function, using provided
         methods to calculate derivatives and fixed points. Depending on conditions, it

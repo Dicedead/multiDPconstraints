@@ -8,6 +8,17 @@ class TradeOffFunction(RealFunction, ABC):
     """
 
     @abstractmethod
+    def fixed_point(self) -> float:
+        """
+        Finds and returns the fixed point of a function by solving the equation f(x) = x,
+        where f is defined by an implementation of this instance. Caches the result.
+
+        :return: The fixed point of the function
+        :rtype: float
+        """
+        pass
+
+    @abstractmethod
     def __call__(self, x: Array) -> Array:
         pass
 
@@ -50,5 +61,10 @@ class TradeOffFunction(RealFunction, ABC):
 
             def __call__(self, x: Array) -> Array:
                 return np.max(np.array([f(x) for f in f_arr]), axis=0)
+
+            def fixed_point(self) -> float:
+                candidates = np.array([f.fixed_point() for f in f_arr])
+                values = np.abs(self(candidates) - candidates)
+                return candidates[np.argmin(values)]
 
         return IntersectedTradeoffFunction()
