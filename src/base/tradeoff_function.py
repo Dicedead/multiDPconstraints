@@ -7,16 +7,24 @@ class TradeOffFunction(RealFunction, ABC):
     Represents an abstract tradeoff function.
     """
 
-    @abstractmethod
     def fixed_point(self) -> float:
         """
         Finds and returns the fixed point of a function by solving the equation f(x) = x,
-        where f is defined by an implementation of this instance. Caches the result.
+        where f is defined by an implementation of this instance.
+
+        By default, looks for the fixed point using the bisection method implemented with Scipy.
 
         :return: The fixed point of the function
         :rtype: float
         """
-        pass
+
+        c = spo.root_scalar(
+            f=lambda x: self(x) - x,
+            bracket=(0, 1),
+            x0=1. / 2.
+        ).root
+        return c
+
 
     @abstractmethod
     def __call__(self, x: Array) -> Array:

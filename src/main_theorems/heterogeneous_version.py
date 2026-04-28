@@ -4,7 +4,13 @@ from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaT
 from multi_dp_mixture.piecewise_affine import PiecewiseAffine
 
 
-def privacy_region_composition_heterogeneous(eps_1, eps_2, x, y) -> MultiEpsDeltaTradeoff:
+def privacy_region_composition_heterogeneous(
+        eps_1,
+        eps_2,
+        x,
+        y,
+        return_eps_deltas: bool = False
+) -> MultiEpsDeltaTradeoff:
     """
     Computes privacy region corresponding to the composition of x (eps_1,0)-DP mechanisms
     with y (eps_2, 0)-DP mechanisms.
@@ -17,6 +23,8 @@ def privacy_region_composition_heterogeneous(eps_1, eps_2, x, y) -> MultiEpsDelt
     :type x: int
     :param y: Number of second kind of mechanisms.
     :type y: int
+    :param return_eps_deltas: If True, returns the list of epsilon and delta values.
+    :type return_eps_deltas: bool
     :return: A compositional trade-off function derived from combinations of mechanisms.
     :rtype: PiecewiseAffine
     """
@@ -61,7 +69,13 @@ def privacy_region_composition_heterogeneous(eps_1, eps_2, x, y) -> MultiEpsDelt
     eps_ls = [compute_epsilon_from_ab(a_star, b_star) for a_star, b_star in a_set]
     delta_ls = [compute_delta_from_ab(a_star, b_star) for a_star, b_star in a_set]
 
-    return MultiEpsDeltaTradeoff(eps_ls, delta_ls)
+    f = MultiEpsDeltaTradeoff(eps_ls, delta_ls)
+
+    if return_eps_deltas:
+        eps_delta_ls = list(zip(eps_ls, delta_ls))
+        return f, eps_delta_ls
+
+    return f
 
 
 def privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_2, delta_2, k) -> TradeOffFunction:

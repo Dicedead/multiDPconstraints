@@ -82,6 +82,49 @@ def __upper_approx_golden_section(
 
     return p
 
+
+def __lower_aprox_bisection(f, n, tol=1e-9, max_iter=1000):
+    """
+    Finds the partition P = (x0, x1, ..., xn) that maximizes the
+    Midpoint Riemann Sum S(P) for a convex, non-increasing function f.
+    """
+    # TODO adapt such that it works on the normal rotation of f instead of f directly
+
+
+    c = f.fixed_point()
+    p = [i * c / n for i in range(n + 1)]
+
+    def local_objective(xi, x_prev, x_next):
+        """Calculates the sum of the two rectangles affected by xi."""
+        area1 = (xi - x_prev) * f((xi + x_prev) / 2)
+        area2 = (x_next - xi) * f((x_next + xi) / 2)
+        return area1 + area2
+
+    # 3. Coordinate Descent Loop
+    for iteration in range(max_iter):
+        prev_p = list(p)
+
+        # Optimize each internal point x_1, ..., x_{n-1}
+        for i in range(1, n):
+            # Ternary search to find the best x[i] between x[i-1] and x[i+1]
+            l, r = p[i - 1], p[i + 1]
+            for _ in range(70):  # High precision
+                m1 = l + (r - l) / 3
+                m2 = r - (r - l) / 3
+                if local_objective(m1, p[i - 1], p[i + 1]) < local_objective(m2, p[i - 1], p[i + 1]):
+                    l = m1
+                else:
+                    r = m2
+            p[i] = (l + r) / 2
+
+        # Check for convergence (max shift in any point)
+        diff = max(abs(p[i] - prev_p[i]) for i in range(n + 1))
+        if diff < tol:
+            break
+
+    return p
+
+
 def multi_dp_approx_above(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
     """
     Compute the best L1 approximation of the trade-off function f from above by an n-DP trade-off function.

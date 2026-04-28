@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import itertools
 import scipy.special as sps
 import scipy.optimize as spo
 import scipy.stats as spt
