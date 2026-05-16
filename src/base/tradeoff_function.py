@@ -1,3 +1,5 @@
+import numpy as np
+
 from base.definitions import *
 from base.real_function import RealFunction
 
@@ -91,6 +93,9 @@ class TradeOffFunction(RealFunction, ABC):
                 candidates = np.array([f.fixed_point() for f in f_arr])
                 values = np.abs(self(candidates) - candidates)
                 return candidates[np.argmin(values)]
+
+            def subgradient_at(self, x: float) -> float:
+                return f_arr[np.argmax(np.array([f(x) for f in f_arr]))].subgradient_at(x)
 
         return IntersectedTradeoffFunction()
 

@@ -5,10 +5,11 @@ from multi_dp_mixture.piecewise_affine import DIAGONAL
 COLOR_1 = '#377eb8'
 COLOR_2 = '#ff7f00'
 COLOR_3 = '#4daf4a'
+COLOR_4 = '#f781bf'
 
 COLORBLIND_FRIENDLY_PALETTE =  \
         [COLOR_1, COLOR_2, COLOR_3,
-         '#f781bf', '#a65628', '#984ea3',
+         COLOR_4, '#a65628', '#984ea3',
          '#999999', '#e41a1c', '#dede00']
 
 

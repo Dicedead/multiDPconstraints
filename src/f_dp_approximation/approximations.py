@@ -1,7 +1,6 @@
 from base.definitions import *
 from base.tradeoff_function import TradeOffFunction, NormalRotation
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff
-from scipy.optimize import brentq
 
 
 def __upper_approx_golden_section(
@@ -55,7 +54,7 @@ def __upper_approx_golden_section(
             f1 = trapezoid_area(x1)
             f2 = trapezoid_area(x2)
 
-            while (b - a) > tol * 0.1: # Tighter tolerance for the 1D search
+            while (b - a) > tol * 0.1:
                 if f1 < f2:
                     b = x2
                     x2 = x1
@@ -71,7 +70,6 @@ def __upper_approx_golden_section(
 
             x_new = (a + b) / 2
 
-            # Track maximum change for convergence checking
             change = np.abs(p[k] - x_new)
             if change > max_change:
                 max_change = change
@@ -84,22 +82,7 @@ def __upper_approx_golden_section(
     return p
 
 
-def __recover_x_coordinates(u, f):
-    u_array = np.atleast_1d(u)
-    x_array = np.zeros_like(u_array, dtype=float)
-    u_scaled = u_array * np.sqrt(2)
-    for i, target in enumerate(u_scaled):
-        x_array[i] = brentq(lambda x: x - f(x) - target, 0.0, f.fixed_point()+1e-6)
-    return x_array
-
-
-def __lower_approx_bisection(
-        f,
-        n,
-        tol=1e-9,
-        max_iter=1000,
-        ternary_search_max_iter=70
-):
+def __lower_approx_midpoint_sum(f: TradeOffFunction, n: int, tol = 1e-9):
     """
     Finds the partition P = (u0, u1, ..., un) that maximizes the
     Midpoint Riemann Sum S(P) for a convex, non-increasing function f,
@@ -109,42 +92,39 @@ def __lower_approx_bisection(
     g = f.normal_rotation()
     z = -f(0) / np.sqrt(2)
 
-    mids = [i * z / n for i in range(n + 1)]
-    mids = np.array(sorted(mids))
+    if n == 1:
+        return np.array([z, 0.0])
 
-    def local_objective(xi, x_prev, x_next):
-        """Calculates the sum of the two rectangles affected by xi."""
-        area1 = (xi - x_prev) * g((xi + x_prev) / 2)
-        area2 = (x_next - xi) * g((x_next + xi) / 2)
-        return area1 + area2
+    def objective(u_inner):
+        u = np.concatenate(([z], u_inner, [0.]))
+        widths = np.diff(u)
+        midpoints = (u[:-1] + u[1:]) / 2.
+        return -1 * np.sum([widths[idx] * g(mid) for idx, mid in enumerate(midpoints)])
 
-    # 3. Coordinate Descent Loop
-    for iteration in range(max_iter):
-        prev_mids = list(mids)
+    # initial guess
+    u0 = np.linspace(z, 0, n + 1)[1:-1]
 
-        # Optimize each internal point x_1, ..., x_{n-1}
-        for i in range(1, n):
-            # Ternary search to find the best x[i] between x[i-1] and x[i+1]
-            l, r = mids[i - 1], mids[i + 1]
-            for _ in range(ternary_search_max_iter):  # High precision
-                m1 = l + (r - l) / 3
-                m2 = r - (r - l) / 3
-                if local_objective(m1, mids[i - 1], mids[i + 1]) < local_objective(m2, mids[i - 1], mids[i + 1]):
-                    l = m1
-                else:
-                    r = m2
-            mids[i] = (l + r) / 2
+    def constraint(u_inner):
+        u = np.concatenate(([z], u_inner, [0.]))
+        return np.diff(u) # enforce u_i <= u_i+1
 
-        # Check for convergence (max shift in any point)
-        diff = max(abs(mids[i] - prev_mids[i]) for i in range(n + 1))
-        if diff < tol:
-            break
+    cons = {'type': 'ineq', 'fun': constraint}
+    bounds = [(z, 0.0) for _ in range(n - 1)]
 
-    # mids_rotated = np.zeros_like(mids)
-    # mids_rotated[1:] = __recover_x_coordinates(mids[1:], f)
-    # return mids_rotated
-    print(mids)
-    return mids
+    result = spo.minimize(
+        objective,
+        u0,
+        method='SLSQP',
+        bounds=bounds,
+        constraints=cons,
+        options={'disp': False, 'ftol': tol}
+    )
+
+    if not result.success:
+        raise RuntimeError(f"Optimization failed: {result.message}")
+
+    optimal_partition = np.concatenate(([z], result.x, [0.]))
+    return optimal_partition
 
 def multi_dp_approx_below(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
     """
@@ -159,7 +139,9 @@ def multi_dp_approx_below(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
     :return: MultiEpsDeltaTradeoff object representing the approximation.
     :rtype: MultiEpsDeltaTradeoff
     """
-    u = __lower_approx_bisection(f, n)
+    assert n >= 1
+
+    u = __lower_approx_midpoint_sum(f, n)
     u = np.array(sorted(np.unique(u)))
 
     slopes = np.zeros(len(u) - 1)
@@ -174,7 +156,6 @@ def multi_dp_approx_below(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
 
         slopes[i-1], offsets[i-1] = NormalRotation.slope_offset_rotation_inversion(slope, offset)
         i += 1
-
     return MultiEpsDeltaTradeoff.from_slopes_and_offsets(slopes, offsets)
 
 
@@ -191,6 +172,8 @@ def multi_dp_approx_above(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
     :return: MultiEpsDeltaTradeoff object representing the approximation.
     :rtype: MultiEpsDeltaTradeoff
     """
+    assert n >= 1
+
     p = __upper_approx_golden_section(f, n)
     p = np.array(sorted(np.unique(p)))
 

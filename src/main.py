@@ -1,7 +1,7 @@
 import numpy as np
 
 from base.tradeoff_function import TradeOffFunction
-from base.utils import plot_multiple_functions, COLOR_1, COLOR_2, COLOR_3
+from base.utils import plot_multiple_functions, COLOR_1, COLOR_2, COLOR_3, COLOR_4
 from f_dp_approximation.approximations import multi_dp_approx_above, multi_dp_approx_below
 from f_dp_approximation.smooth_approximation.gaussian_tradeoff import GaussianTradeoff
 from f_dp_approximation.smooth_approximation.laplace_tradeoff import LaplaceTradeoff
@@ -497,27 +497,32 @@ def smooth_vs_nonsmooth_below_2dp_approx_gaussian(mu, title):
     gaussian = GaussianTradeoff(mu)
     smooth_approx = gaussian.approx_from_below_2_dp()
     nonsmooth_approx = multi_dp_approx_below(gaussian, 2)
+    better_approx = multi_dp_approx_below(gaussian, 3)
 
     plot_multiple_functions(
         [
             gaussian,
             nonsmooth_approx,
-            smooth_approx
+            smooth_approx,
+            better_approx
         ],
         [
             "Gaussian",
             "Non-smooth Approx",
-            "Smooth Approx"
+            "Smooth Approx",
+            "Better Approx"
         ],
         [
             "solid",
             "dashed",
+            "dotted",
             "dashed"
         ],
         [
             COLOR_1,
             COLOR_2,
-            COLOR_3
+            COLOR_3,
+            COLOR_4
         ],
         save_to=png(title)
     )
