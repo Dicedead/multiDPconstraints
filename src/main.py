@@ -528,24 +528,24 @@ def smooth_vs_nonsmooth_below_2dp_approx_gaussian(mu, title):
     )
 
 if __name__ == "__main__":
-    # heterogeneous_comparison(eps_1=0.6,eps_2=0.4,x=3,y=2,delta_slack_ls=[0.001], title="heterogeneous_comparison")
-    # mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
-    # gaussian_tradeoff_approx(mu=1, title="gaussian_approx")
-    # gaussian_compos_approx(k=20, mu=0.05, title="gaussian_compos_approx")
-    # gaussian_compos_approx(k=3, mu=1, title="gaussian_compos_approx_2")
-    # gaussian_compos_approx_two_compos(k1=10, k2=3, mu=1, title="gaussian_2_compos")
-    # gaussian_tradeoff_and_compos_approx(k=3, mu=1, title="gaussian_tradeoff_and_compos_approx")
-    # main_theorem_comparison(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k = 3, title="theorem_1_comparison")
-    # main_theorem_example(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k_ls = [2, 3, 10, 20],
-    #                      title="theorem_1_example")
-    # main_theorem_example(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k_ls = [2, 3, 10, 20],
-    #                      title="theorem_1_example_small_region")
-    # main_theorem_comparison_two_ks(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2,
-    #                                k1=3, k2=10, title="theorem_1_comparison_two_ks")
-    # main_theorem_comparison_two_ks(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k1=3, k2=20,
-    #                               title="theorem_1_comparison_two_ks_small_region")
-    # gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=1, title="gaussian_tradeoff_and_2_compos")
-    # gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=0.05, title="gaussian_tradeoff_and_2_compos_small")
-    # gaussian_tradeoff_and_compos_approx(mu=0.05, k=3, title="gaussian_tradeoff_and_compos_approx_small_single_reg")
+    heterogeneous_comparison(eps_1=0.6,eps_2=0.4,x=3,y=2,delta_slack_ls=[0.001], title="heterogeneous_comparison")
+    mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
+    gaussian_tradeoff_approx(mu=1, title="gaussian_approx")
+    gaussian_compos_approx(k=20, mu=0.05, title="gaussian_compos_approx")
+    gaussian_compos_approx(k=3, mu=1, title="gaussian_compos_approx_2")
+    gaussian_compos_approx_two_compos(k1=10, k2=3, mu=1, title="gaussian_2_compos")
+    gaussian_tradeoff_and_compos_approx(k=3, mu=1, title="gaussian_tradeoff_and_compos_approx")
+    main_theorem_comparison(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k = 3, title="theorem_1_comparison")
+    main_theorem_example(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k_ls = [2, 3, 10, 20],
+                         title="theorem_1_example")
+    main_theorem_example(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k_ls = [2, 3, 10, 20],
+                         title="theorem_1_example_small_region")
+    main_theorem_comparison_two_ks(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2,
+                                   k1=3, k2=10, title="theorem_1_comparison_two_ks")
+    main_theorem_comparison_two_ks(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k1=3, k2=20,
+                                  title="theorem_1_comparison_two_ks_small_region")
+    gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=1, title="gaussian_tradeoff_and_2_compos")
+    gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=0.05, title="gaussian_tradeoff_and_2_compos_small")
+    gaussian_tradeoff_and_compos_approx(mu=0.05, k=3, title="gaussian_tradeoff_and_compos_approx_small_single_reg")
     smooth_vs_nonsmooth_above_2dp_approx_gaussian(mu=1, title="smooth_vs_nonsmooth_2dp_approx_gaussian_above")
     smooth_vs_nonsmooth_below_2dp_approx_gaussian(mu=1, title="smooth_vs_nonsmooth_2dp_approx_gaussian_below")
