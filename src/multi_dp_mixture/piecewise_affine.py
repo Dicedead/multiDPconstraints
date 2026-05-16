@@ -33,14 +33,14 @@ class PiecewiseAffine(RealFunction):
         self._domain_end = domain_end
         self._bounded_domain = bounded
 
-    def __call__(self, x: np.ndarray) -> np.ndarray:
+    def __call__(self, x: Array) -> Array:
         """
         Evaluates the maximum value across a computed set of linear equations for each input element.
 
         :param x: Input array, evaluation point of the piecewise affine function.
-        :type x: np.ndarray, last dimension of the same length as lists of slopes and intercepts.
+        :type x: Array, last dimension of the same length as lists of slopes and intercepts.
         :return: The maximum computed value along the last axis of the transformed array.
-        :rtype: np.ndarray
+        :rtype: Array
         """
         x = x.reshape(-1, 1)
         max_input = self._inner_slopes * x + self._inner_intercepts
@@ -86,6 +86,24 @@ class PiecewiseAffine(RealFunction):
             domain_end=domain_end,
             bounded=not self._bounded_domain
             )
+
+    def subgradient(self, x: float, tol=1e-9) -> float:
+        """
+        Compute the subgradient of the function at x.
+
+        :param x: point to compute the subgradient at
+        :type x: float
+        :param tol: tolerance for the equality check
+        :type tol: float
+        :return: float
+        """
+        y_values = [a * x + b for a, b in zip(self._slopes, self._intercepts)]
+        f_x = max(y_values)
+        active_slopes = [
+            a for a, y in zip(self._slopes, y_values)
+            if abs(y - f_x) <= tol
+        ]
+        return min(active_slopes)
 
     def __add__(self, other: 'PiecewiseAffine') -> 'PiecewiseAffine':
         """

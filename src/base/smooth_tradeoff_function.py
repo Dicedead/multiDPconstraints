@@ -1,6 +1,6 @@
 from base.definitions import *
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
-from base.tradeoff_function import TradeOffFunction
+from base.tradeoff_function import TradeOffFunction, NormalRotation
 
 
 class SmoothTradeOffFunction(TradeOffFunction, ABC):
@@ -52,10 +52,10 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
         raise "Convex conjugate not defined."
 
     def find_pivot_approx_above(self) -> float | None:
-        return None
+        pass
 
     def find_pivot_approx_below(self) -> float | None:
-        return None
+        pass
 
     def fixed_point(self) -> float:
         """
@@ -77,6 +77,9 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
         ).root
 
         return self._cached_c
+
+    def subgradient_at(self, x: float) -> float:
+        return self.derivative_at(x)
 
     def rotation_change(self, u: float) -> Callable[[Array], Array]:
         """
@@ -135,7 +138,7 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
          """
         return 1 - np.sqrt(2) * beta/(alpha + 1)
 
-    def approx_from_below_2_dp(self, g: 'NormalRotation' = None) -> MultiEpsDeltaTradeoff:
+    def approx_from_below_2_dp(self, g: 'SmoothNormalRotation' = None) -> MultiEpsDeltaTradeoff:
         """
         Compute an approximation from below for the given tradeoff function.
 
@@ -144,7 +147,7 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
         :return: MultiEpsDeltaTradeoff object representing the approximated tradeoff curve.
         """
         if g is None:
-            g = NormalRotation(self)
+            g = SmoothNormalRotation(self)
 
         t_approx_below = self.find_pivot_approx_below()
         if t_approx_below is not None:
@@ -212,22 +215,15 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
             return MultiEpsDeltaTradeoff([eps_1, eps_2], [delta_1, delta_2])
 
 
-class NormalRotation:
+class SmoothNormalRotation(NormalRotation):
 
     """
     45 degree rotation of a smooth trade-off function.
     """
-
     def __init__(self, f: SmoothTradeOffFunction):
-        self._f = f
-        self._z = -f(0)/np.sqrt(2)
+        super().__init__(f)
+        self._f: SmoothTradeOffFunction = f
 
-    def get_z(self):
-        """
-        Left bound of the rotation interval.
-        :return: float
-        """
-        return self._z
 
     def preprocess_for_approx_below(self):
         """

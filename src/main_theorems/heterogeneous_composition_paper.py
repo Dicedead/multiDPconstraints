@@ -1,8 +1,6 @@
 from base.definitions import *
-from base.tradeoff_function import TradeOffFunction
 from main_theorems.heterogeneous_version import privacy_region_composition_heterogeneous
-from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
-from multi_dp_mixture.piecewise_affine import PiecewiseAffine
+from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff
 
 
 def heter_comp_generalized(epsilons, deltas, return_eps_deltas: bool = False) -> MultiEpsDeltaTradeoff:
