@@ -512,7 +512,7 @@ def smooth_vs_nonsmooth_below_2dp_approx_gaussian(mu, title):
         [
             "solid",
             "dashed",
-            "solid"
+            "dashed"
         ],
         [
             COLOR_1,

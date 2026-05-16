@@ -1,5 +1,3 @@
-import numpy as np
-
 from base.definitions import *
 from base.real_function import RealFunction
 
@@ -33,10 +31,13 @@ class TradeOffFunction(RealFunction, ABC):
 
         :param u: Rotated evaluation point.
         :type u: float
-        :return: Function to minimize to obtain the rotated evaluation point.
+        :return: Function to find the root of to obtain the rotated evaluation point.
         :rtype: Callable[[Array], Array]
         """
         return lambda x: (x - self(x))/np.sqrt(2) - u
+
+    def normal_rotation(self) -> 'NormalRotation':
+        return NormalRotation(self)
 
     @abstractmethod
     def subgradient_at(self, x: float) -> float:

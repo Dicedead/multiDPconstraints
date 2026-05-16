@@ -106,7 +106,7 @@ def __lower_approx_bisection(
     passing by its normal rotation.
     """
 
-    g = NormalRotation(f)
+    g = f.normal_rotation()
     z = -f(0) / np.sqrt(2)
 
     mids = [i * z / n for i in range(n + 1)]
@@ -143,6 +143,7 @@ def __lower_approx_bisection(
     # mids_rotated = np.zeros_like(mids)
     # mids_rotated[1:] = __recover_x_coordinates(mids[1:], f)
     # return mids_rotated
+    print(mids)
     return mids
 
 def multi_dp_approx_below(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
@@ -163,7 +164,7 @@ def multi_dp_approx_below(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
 
     slopes = np.zeros(len(u) - 1)
     offsets = np.zeros(len(u) - 1)
-    g = NormalRotation(f)
+    g = f.normal_rotation()
 
     i = 1
     while i < len(u):

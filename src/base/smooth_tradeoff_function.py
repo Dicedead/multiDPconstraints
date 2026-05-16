@@ -147,7 +147,7 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
         :return: MultiEpsDeltaTradeoff object representing the approximated tradeoff curve.
         """
         if g is None:
-            g = SmoothNormalRotation(self)
+            g = self.normal_rotation()
 
         t_approx_below = self.find_pivot_approx_below()
         if t_approx_below is not None:
@@ -213,6 +213,9 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
             eps_2 = np.log(log_arg)
             delta_2 = 1-self.fixed_point()-self.fixed_point() * log_arg
             return MultiEpsDeltaTradeoff([eps_1, eps_2], [delta_1, delta_2])
+
+    def normal_rotation(self) -> 'SmoothNormalRotation':
+        return SmoothNormalRotation(self)
 
 
 class SmoothNormalRotation(NormalRotation):
@@ -287,6 +290,9 @@ class SmoothNormalRotation(NormalRotation):
     def __call__(self, u: Array) -> Array:
         return self.call(u)
 
+    def subgradient_at(self, u: float) -> Array:
+        return self.derivative_at(u)
+
     def derivative_at(self, u: Array, x_u: Array = None) -> Array:
         """
         Evaluate the derivative of rotated function at `u` using the precomputed `x_u` values,
@@ -300,7 +306,7 @@ class SmoothNormalRotation(NormalRotation):
         if x_u is None:
             x_u = [self.invert_u(ui) for ui in u] if type(u) is Array else self.invert_u(u)
         f_prime_x_u = self._f.derivative_at(x_u)
-        return (1+f_prime_x_u)/(1-f_prime_x_u)
+        return NormalRotation.slope_forward_rotation(f_prime_x_u)
 
     def second_derivative_at(self, u: Array, x_u: Array = None) -> Array:
         """
