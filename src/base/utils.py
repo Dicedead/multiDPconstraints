@@ -1,3 +1,5 @@
+from breezy.trace import show_error
+
 from base.definitions import *
 from base.tradeoff_function import TradeOffFunction
 from multi_dp_mixture.piecewise_affine import DIAGONAL
@@ -15,14 +17,15 @@ COLORBLIND_FRIENDLY_PALETTE =  \
 
 def plot_multiple_functions(
         f_arr: List[TradeOffFunction],
-        labels: List[str],
+        labels: List[str] = None,
         linestyles: List[str] = None,
         colors: List[str] = None,
         orders: List[int] = None,
         start=0,
         end=1,
         num_points=100,
-        save_to: str = None
+        save_to: str = None,
+        show_legend=True
 ):
     """
     Plots multiple functions on the same graph, providing a visual comparison
@@ -32,7 +35,8 @@ def plot_multiple_functions(
                   a function to be plotted.
     :type f_arr: List[PiecewiseAffine]
     :param labels: A list of labels corresponding to each function in f_arr,
-                   which will be used for the plot's legend.
+                   which will be used for the plot's legend. If not provided,
+                   no legend shown.
     :type labels: List[str]
     :param linestyles: A list of linestyles to be used for each function in f_arr.
     :type linestyles: List[str], optional. Defaults to solid style for all functions.
@@ -51,7 +55,11 @@ def plot_multiple_functions(
     :type save_to: str, optional
     :return: None
     """
-    assert len(f_arr) == len(labels)
+    show_legend = labels is not None
+    assert not show_legend or len(f_arr) == len(labels)
+
+    if not show_legend:
+        labels = [""] * len(f_arr)
 
     if linestyles is None:
         linestyles = ["solid"] * len(f_arr)
@@ -70,12 +78,13 @@ def plot_multiple_functions(
         plt.plot(x, f(x), label=label, linestyle=linestyle, color=color, zorder=order)
 
     plt.plot(x, DIAGONAL(x), "k--")
-    plt.legend()
     ax.set_aspect('equal', adjustable='box')
     ax.set_autoscale_on(False)
     plt.xlabel("$\\beta_I$")
     plt.ylabel("$\\beta_{II}}$")
-    #plt.tight_layout()
+
+    if show_legend:
+        plt.legend()
 
     if save_to is not None:
         plt.savefig(save_to, bbox_inches='tight',pad_inches = 0)

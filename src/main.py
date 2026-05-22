@@ -527,25 +527,88 @@ def smooth_vs_nonsmooth_below_2dp_approx_gaussian(mu, title):
         save_to=png(title)
     )
 
+def two_dp_constraints():
+    eps_1 = 1.2
+    delta_1 = 0.0
+    eps_2 = 0.6
+    delta_2 = 0.15
+    f1 = SingleEpsDeltaTradeoff(eps_1, delta_1)
+    f2 = SingleEpsDeltaTradeoff(eps_2, delta_2)
+    title = "two_dp_constraints"
+
+    plot_multiple_functions([f1, f2],
+                                            [
+                                             f"$({eps_1},{delta_1})$-DP",
+                                             f"$({eps_2},{delta_2})$-DP",
+                                             ],
+                            [
+                                "solid",
+                                "solid",
+                            ],
+                            save_to=png(title)
+                            )
+
+def gaussian_n_dp_approx():
+    """
+    Compare n-DP approximations of GDP from below.
+    """
+    mu = 1.
+    n = 2
+    gaussian = GaussianTradeoff(mu)
+    below_approx = multi_dp_approx_below(gaussian, n)
+    above_approx = multi_dp_approx_above(gaussian, n)
+
+    eps_below = below_approx.get_eps_list()
+    delta_below = below_approx.get_delta_list()
+
+    eps_above = above_approx.get_eps_list()
+    delta_above = above_approx.get_delta_list()
+
+    f_below = [SingleEpsDeltaTradeoff(eps,delta) for eps, delta in zip(eps_below, delta_below)]
+    f_above = [SingleEpsDeltaTradeoff(eps, delta) for eps,delta in zip(eps_above, delta_above)]
+
+    f_arr = f_below + f_above + [gaussian]
+    colors = [COLOR_3] * len(f_below) + [COLOR_2] * len(f_above) + [COLOR_1]
+    linestyles = ["dashed"] * len(f_below) + ["dashed"] * len(f_above) + ["solid"]
+    title = f"gaussian_{n}_dp_approx"
+
+
+    plot_multiple_functions(
+        f_arr = f_arr,
+        colors = colors,
+        linestyles = linestyles,
+        save_to=png(title)
+    )
+
+    plot_multiple_functions(
+        f_arr = [gaussian, below_approx, above_approx],
+        labels= ["1-GDP", f"{n}-DP approx below", f"{n}-DP approx above"],
+        colors = [COLOR_1, COLOR_3, COLOR_2],
+        linestyles = ["solid", "dashed", "dashed"],
+        save_to=png(title + "_maxed")
+    )
+
 if __name__ == "__main__":
-    heterogeneous_comparison(eps_1=0.6,eps_2=0.4,x=3,y=2,delta_slack_ls=[0.001], title="heterogeneous_comparison")
-    mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
-    gaussian_tradeoff_approx(mu=1, title="gaussian_approx")
-    gaussian_compos_approx(k=20, mu=0.05, title="gaussian_compos_approx")
-    gaussian_compos_approx(k=3, mu=1, title="gaussian_compos_approx_2")
-    gaussian_compos_approx_two_compos(k1=10, k2=3, mu=1, title="gaussian_2_compos")
-    gaussian_tradeoff_and_compos_approx(k=3, mu=1, title="gaussian_tradeoff_and_compos_approx")
-    main_theorem_comparison(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k = 3, title="theorem_1_comparison")
-    main_theorem_example(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k_ls = [2, 3, 10, 20],
-                         title="theorem_1_example")
-    main_theorem_example(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k_ls = [2, 3, 10, 20],
-                         title="theorem_1_example_small_region")
-    main_theorem_comparison_two_ks(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2,
-                                   k1=3, k2=10, title="theorem_1_comparison_two_ks")
-    main_theorem_comparison_two_ks(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k1=3, k2=20,
-                                  title="theorem_1_comparison_two_ks_small_region")
-    gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=1, title="gaussian_tradeoff_and_2_compos")
-    gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=0.05, title="gaussian_tradeoff_and_2_compos_small")
-    gaussian_tradeoff_and_compos_approx(mu=0.05, k=3, title="gaussian_tradeoff_and_compos_approx_small_single_reg")
-    smooth_vs_nonsmooth_above_2dp_approx_gaussian(mu=1, title="smooth_vs_nonsmooth_2dp_approx_gaussian_above")
-    smooth_vs_nonsmooth_below_2dp_approx_gaussian(mu=1, title="smooth_vs_nonsmooth_2dp_approx_gaussian_below")
+    # heterogeneous_comparison(eps_1=0.6,eps_2=0.4,x=3,y=2,delta_slack_ls=[0.001], title="heterogeneous_comparison")
+    # mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
+    # gaussian_tradeoff_approx(mu=1, title="gaussian_approx")
+    # gaussian_compos_approx(k=20, mu=0.05, title="gaussian_compos_approx")
+    # gaussian_compos_approx(k=3, mu=1, title="gaussian_compos_approx_2")
+    # gaussian_compos_approx_two_compos(k1=10, k2=3, mu=1, title="gaussian_2_compos")
+    # gaussian_tradeoff_and_compos_approx(k=3, mu=1, title="gaussian_tradeoff_and_compos_approx")
+    # main_theorem_comparison(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k = 3, title="theorem_1_comparison")
+    # main_theorem_example(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k_ls = [2, 3, 10, 20],
+    #                      title="theorem_1_example")
+    # main_theorem_example(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k_ls = [2, 3, 10, 20],
+    #                      title="theorem_1_example_small_region")
+    # main_theorem_comparison_two_ks(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2,
+    #                                k1=3, k2=10, title="theorem_1_comparison_two_ks")
+    # main_theorem_comparison_two_ks(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k1=3, k2=20,
+    #                               title="theorem_1_comparison_two_ks_small_region")
+    # gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=1, title="gaussian_tradeoff_and_2_compos")
+    # gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=0.05, title="gaussian_tradeoff_and_2_compos_small")
+    # gaussian_tradeoff_and_compos_approx(mu=0.05, k=3, title="gaussian_tradeoff_and_compos_approx_small_single_reg")
+    # smooth_vs_nonsmooth_above_2dp_approx_gaussian(mu=1, title="smooth_vs_nonsmooth_2dp_approx_gaussian_above")
+    # smooth_vs_nonsmooth_below_2dp_approx_gaussian(mu=1., title="smooth_vs_nonsmooth_2dp_approx_gaussian_below")
+    gaussian_n_dp_approx()
+
