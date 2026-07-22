@@ -1,10 +1,14 @@
+import numpy as np
+
 from base.definitions import *
 from base.tradeoff_function import TradeOffFunction
-from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
-from multi_dp_mixture.piecewise_affine import PiecewiseAffine
+from main_theorems.heterogeneous_composition_paper import heter_comp_generalized
+from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff, \
+    get_all_slopes_intercepts_from_eps_delta_ls, slope_to_eps, intercept_to_delta
+from multi_dp_mixture.piecewise_affine import PiecewiseAffine, keep_useful_lines
 
 
-def privacy_region_composition_heterogeneous(
+def privacy_region_composition_heterogeneous_two_constraints(
         eps_1,
         eps_2,
         x,
@@ -124,6 +128,93 @@ def privacy_region_composition_double_dp_heterogeneous_comp(eps_1, delta_1, eps_
     for i in range(0, k+1):
         weight = heterogeneous_weight * sps.comb(k, i) * ((1 - alpha) ** i) * (alpha ** (k-i))
         weights.append(weight)
-        functions.append(privacy_region_composition_heterogeneous(eps_1, eps_2, i, k-i))
+        functions.append(privacy_region_composition_heterogeneous_two_constraints(eps_1, eps_2, i, k - i))
+
+    return TradeOffFunction.weighted_infimal_convolution(weights, functions)
+
+
+def __weak_compositions(n, k):
+    """
+    Yields all vectors of length n with non-negative integer components summing to k.
+    """
+    # Edge cases
+    if n == 0:
+        if k == 0:
+            yield ()
+        return
+
+    for c in itertools.combinations(range(k + n - 1), n - 1):
+        extended_c = (-1,) + c + (k + n - 1,)
+        yield tuple(extended_c[i + 1] - extended_c[i] - 1 for i in range(n))
+
+def __multinomial(lst):
+    lst = list(lst)
+    res, i = 1, sum(lst)
+    i0 = lst.index(max(lst))
+    for a in lst[:i0] + lst[i0+1:]:
+        for j in range(1,a+1):
+            res *= i
+            res //= j
+            i -= 1
+    return res
+
+def privacy_region_composition_multi_dp(eps_ls: List[float], delta_ls: List[float], k: int) -> TradeOffFunction:
+    """
+    Computes the privacy region composition of k multi-DP constrained
+    mechanisms by decomposing the composition into a sum of compositions of
+    heterogeneous mechanisms.
+
+    :param eps_ls: List of epsilon parameters.
+    :type eps_ls: List[float]
+    :param delta_ls: List of delta parameters.
+    :type delta_ls: List[float], same size as eps_ls
+    :param k: Total number of mechanisms to compose.
+    :type k: int, >= 1
+    :return: A compositional trade-off function derived from combinations of mechanisms.
+    :rtype: PiecewiseAffine
+    """
+    assert len(eps_ls) == len(delta_ls)
+
+    # Keep only the active constraints and sort them by decreasing epsilon and increasing delta
+    ## TODO check correctness of NOT taking inverse slopes/offsets into account + check correct sorting
+    slopes, intercepts = get_all_slopes_intercepts_from_eps_delta_ls(
+        np.array(eps_ls), np.array(delta_ls), with_inverses=False
+    )
+    useful_pairs = keep_useful_lines(list(zip(slopes, intercepts)))
+    eps_ls_reduced = slope_to_eps(np.array([p[0] for p in useful_pairs]))
+    delta_ls_reduced = intercept_to_delta(np.array([p[1] for p in useful_pairs]))
+
+    n = len(eps_ls_reduced)
+
+    delta_1 = delta_ls_reduced[0]
+    delta_tilde = 1 - ((1 - delta_1) ** k)
+
+    sigmas = np.zeros_like(eps_ls_reduced)
+    sigmas[0] = 1-delta_1
+    for i in range(1, n):
+        exp_eps_i_1 = np.exp(eps_ls_reduced[i-1])
+        exp_eps_i = np.exp(eps_ls_reduced[i])
+        delta_i_1 = delta_ls_reduced[i-1]
+        delta_i = delta_ls_reduced[i]
+
+        sigmas[i] = exp_eps_i_1 * (1-delta_i) - exp_eps_i * (1-delta_i_1) + (delta_i_1 - delta_i)
+        sigmas[i] /= (exp_eps_i_1 - exp_eps_i)
+        sigmas[i] /= (1-delta_i_1)
+
+    alphas = np.zeros_like(sigmas)
+    for i in range(1,n-1):
+        alphas[i] = sigmas[i] - sigmas[i+1]
+    alphas[-1] = sigmas[-1]
+    alphas[0] = 1 - alphas.sum()
+
+    weights = [delta_tilde]
+    functions: List[MultiEpsDeltaTradeoff] = [SingleEpsDeltaTradeoff(0, 1)]
+
+    for j in list(__weak_compositions(n, k)):
+        j = np.array(j)
+        weight = (1-delta_tilde) * __multinomial(j) * np.prod([alphas[i] ** j[i] for i in range(n)])
+        weights.append(weight)
+        eps_j_list = np.concatenate([np.repeat(eps_ls_reduced[i], j[i]) for i in range(n)])
+        functions.append(heter_comp_generalized(eps_j_list, np.zeros_like(eps_j_list)))
 
     return TradeOffFunction.weighted_infimal_convolution(weights, functions)

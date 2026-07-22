@@ -2,6 +2,32 @@ from base.definitions import *
 from base.real_function import RealFunction
 
 
+def keep_useful_lines(pairs):
+    """
+    Compute the upper convex hull of (slope, intercept) pairs.
+    Assumes max-of-affines representation.
+    """
+
+    points = sorted(set(pairs))
+    if len(points) <= 1:
+        return points
+
+    hull = []
+    for candidate_slope, candidate_intercept in points:
+        while len(hull) >= 2:
+            older_slope, older_intercept = hull[-2]
+            previous_slope, previous_intercept = hull[-1]
+
+            if ((previous_intercept - older_intercept) * (candidate_slope - previous_slope)
+                    <= (candidate_intercept - previous_intercept) * (previous_slope - older_slope)):
+                hull.pop()
+            else:
+                break
+
+        hull.append((candidate_slope, candidate_intercept))
+
+    return hull
+
 class PiecewiseAffine(RealFunction):
     """
     Represents a piecewise affine function.
@@ -19,7 +45,7 @@ class PiecewiseAffine(RealFunction):
             bounded: bool = False
     ):
         pairs = list(zip(slopes, intercepts))
-        useful_pairs = PiecewiseAffine.__keep_useful_lines(pairs)
+        useful_pairs = keep_useful_lines(pairs)
 
         self._slopes = np.array([p[0] for p in useful_pairs])
         self._intercepts = np.array([p[1] for p in useful_pairs])
@@ -192,33 +218,6 @@ class PiecewiseAffine(RealFunction):
             ax.set_autoscale_on(False)
 
         plt.show()
-
-    @staticmethod
-    def __keep_useful_lines(pairs):
-        """
-        Compute the upper convex hull of (slope, intercept) pairs.
-        Assumes max-of-affines representation.
-        """
-
-        points = sorted(set(pairs))
-        if len(points) <= 1:
-            return points
-
-        hull = []
-        for candidate_slope, candidate_intercept in points:
-            while len(hull) >= 2:
-                older_slope, older_intercept = hull[-2]
-                previous_slope, previous_intercept = hull[-1]
-
-                if ((previous_intercept - older_intercept) * (candidate_slope - previous_slope)
-                        <= (candidate_intercept - previous_intercept) * (previous_slope - older_slope)):
-                    hull.pop()
-                else:
-                    break
-
-            hull.append((candidate_slope, candidate_intercept))
-
-        return hull
 
     def get_slopes(self) -> Array:
         """

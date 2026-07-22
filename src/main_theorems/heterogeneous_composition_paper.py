@@ -1,5 +1,4 @@
 from base.definitions import *
-from main_theorems.heterogeneous_version import privacy_region_composition_heterogeneous
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff
 
 
@@ -66,20 +65,3 @@ def heter_comp_generalized(epsilons, deltas, return_eps_deltas: bool = False) ->
 
     return f
 
-
-if __name__ == "__main__":
-    eps_1 = 1.3
-    eps_2 = 0.5
-    x = 3
-    y = 2
-    eps = [eps_1] * x + [eps_2] * y
-    dls = [0] * len(eps)
-
-    _, new_imp = heter_comp_generalized(eps, dls, return_eps_deltas=True)
-
-    _, current_imp = privacy_region_composition_heterogeneous(eps_1, eps_2, x, y, True)
-    current_imp.sort(key=lambda x: x[0])
-    new_imp.sort(key=lambda x: x[0])
-
-    print(current_imp)
-    print(new_imp)
