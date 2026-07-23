@@ -692,21 +692,70 @@ def multidp_example_multi_vs_double(eps_ls, delta_ls, k, title):
     )
 
 
-def laplace_multidp_approx(eps, n, k, title):
+def laplace_multidp_comp_approx(eps, n, k, title):
     f_lap = LaplaceTradeoff(eps)
 
     f_below = multi_dp_approx_below(f_lap, n)
     f_above = multi_dp_approx_above(f_lap, n)
 
-    f_lap_comp = LaplaceTradeoff(k * eps)
+    f_lap_comp = LaplaceTradeoff(eps)
     f_below_comp = privacy_region_composition_multi_dp(f_below.get_eps_list(), f_below.get_delta_list(), k)
     f_above_comp = privacy_region_composition_multi_dp(f_above.get_eps_list(), f_above.get_delta_list(), k)
 
     plot_multiple_functions(
-        [f_lap_comp, f_below_comp, f_above_comp],
-        [f"Laplace({eps})-DP, {k} comp.", f"{n}-DP approx below", f"{n}-DP approx above"],
-        ["solid", "dashed", "dashed"],
+        [
+         f_lap_comp,
+         f_below_comp,
+         f_above_comp
+        ],
+        [
+            f"Laplace({eps})-DP",
+            f"{n}-DP {k}-comp. approx below",
+            f"{n}-DP {k}-comp. approx above"
+        ],
+
+    ["solid",
+         "dashed",
+         "dashed"
+        ],
         save_to=png(title)
+    )
+
+def laplace_n_dp_approx(n, mu=1):
+    """
+    Compare n-DP approximations of Laplace-DP.
+    """
+    lap = LaplaceTradeoff(mu)
+    below_approx = multi_dp_approx_below(lap, n)
+    above_approx = multi_dp_approx_above(lap, n)
+
+    eps_below = below_approx.get_eps_list()
+    delta_below = below_approx.get_delta_list()
+
+    eps_above = above_approx.get_eps_list()
+    delta_above = above_approx.get_delta_list()
+
+    f_below = [SingleEpsDeltaTradeoff(eps,delta) for eps, delta in zip(eps_below, delta_below)]
+    f_above = [SingleEpsDeltaTradeoff(eps, delta) for eps,delta in zip(eps_above, delta_above)]
+
+    f_arr = f_below + f_above + [lap]
+    colors = [COLOR_3] * len(f_below) + [COLOR_2] * len(f_above) + [COLOR_1]
+    linestyles = ["dashed"] * len(f_below) + ["dashed"] * len(f_above) + ["solid"]
+    title = f"laplace_{n}_dp_approx"
+
+    plot_multiple_functions(
+        f_arr = f_arr,
+        colors = colors,
+        linestyles = linestyles,
+        save_to=png(title)
+    )
+
+    plot_multiple_functions(
+        f_arr = [lap, below_approx, above_approx],
+        labels= [f"Laplace({mu})-DP", f"{n}-DP approx below", f"{n}-DP approx above"],
+        colors = [COLOR_1, COLOR_3, COLOR_2],
+        linestyles = ["solid", "dashed", "dashed"],
+        save_to=png(title + "_maxed")
     )
 
 if __name__ == "__main__":
@@ -735,4 +784,6 @@ if __name__ == "__main__":
     # doubledp_and_multidp_coincide(eps_1=0.3, delta_1=0.0, eps_2=0.15, delta_2=0.02, k_ls=[5],
     #                               title="double_and_multi_comparison")
     # multidp_example_multi_vs_double([0.3, 0.15, 0.04, 0.01], [0.0, 0.02, 0.05, 0.06], 5, "triple_vs_double")
-    laplace_multidp_approx(0.4, 2, 1, "laplace_2dp_comp_approx")
+    laplace_multidp_comp_approx(1, 3, 4, "laplace_3dp_comp_approx")
+    laplace_multidp_comp_approx(1, 2, 4, "laplace_2dp_comp_approx")
+    laplace_n_dp_approx(4)

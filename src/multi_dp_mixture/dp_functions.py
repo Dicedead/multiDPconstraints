@@ -25,7 +25,7 @@ def slope_to_eps(slope: Array) -> Array:
     :return: The computed epsilon value obtained from the given slope.
     :rtype: Array
     """
-    return np.log(-slope)
+    return np.clip(np.log(-slope), 0, None)
 
 def delta_to_intercept(delta: Array) -> Array:
     """
@@ -47,7 +47,7 @@ def intercept_to_delta(inter: Array) -> Array:
     :return: The resulting delta value.
     :rtype: Array
     """
-    return 1-inter
+    return np.clip(1-inter, 0, 1)
 
 def get_all_slopes_intercepts_from_eps_delta_ls(eps_ls: Array, delta_ls: Array, with_inverses=True) -> Tuple[Array, Array]:
     """

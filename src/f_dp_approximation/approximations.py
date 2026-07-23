@@ -1,6 +1,7 @@
 from base.definitions import *
 from base.tradeoff_function import TradeOffFunction, NormalRotation
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff
+from multi_dp_mixture.piecewise_affine import keep_useful_lines
 
 
 def __upper_approx_golden_section(
@@ -156,7 +157,7 @@ def multi_dp_approx_below(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
 
         slopes[i-1], offsets[i-1] = NormalRotation.slope_offset_rotation_inversion(slope, offset)
         i += 1
-    return MultiEpsDeltaTradeoff.from_slopes_and_offsets(slopes, offsets)
+    return MultiEpsDeltaTradeoff.from_slopes_and_offsets(*keep_useful_lines(slopes, offsets))
 
 
 def multi_dp_approx_above(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
@@ -189,7 +190,7 @@ def multi_dp_approx_above(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
         offsets[i] = offset
         i += 1
 
-    return MultiEpsDeltaTradeoff.from_slopes_and_offsets(slopes, offsets)
+    return MultiEpsDeltaTradeoff.from_slopes_and_offsets(*keep_useful_lines(slopes, offsets))
 
 
 

@@ -2,31 +2,46 @@ from base.definitions import *
 from base.real_function import RealFunction
 
 
-def keep_useful_lines(pairs):
+def keep_useful_lines(slopes: Array, intercepts: Array) -> Tuple[Array, Array]:
     """
-    Compute the upper convex hull of (slope, intercept) pairs.
+    Filters and returns useful lines based on their slopes and intercepts,
+    removing redundant ones that do not contribute to the convex hull.
     Assumes max-of-affines representation.
+
+    :param slopes: 1D array containing the slopes of the lines.
+    :type slopes: Array
+    :param intercepts: 1D array containing the intercepts of the lines.
+    :type intercepts: Array
+    :return: Tuple of useful slopes, then useful intercepts.
+    :rtype: Tuple[Array, Array]
     """
+    pairs = set(zip(slopes, intercepts))
+    points = sorted(list(pairs))
+    num_points = len(points)
 
-    points = sorted(set(pairs))
-    if len(points) <= 1:
-        return points
+    if num_points == 0:
+        return np.array([]), np.array([])
+    if num_points == 1:
+        return np.r_[points[0][0]], np.r_[points[0][1]]
 
-    hull = []
+    hull_useful_pairs = []
     for candidate_slope, candidate_intercept in points:
-        while len(hull) >= 2:
-            older_slope, older_intercept = hull[-2]
-            previous_slope, previous_intercept = hull[-1]
+        while len(hull_useful_pairs) >= 2:
+            older_slope, older_intercept = hull_useful_pairs[-2]
+            previous_slope, previous_intercept = hull_useful_pairs[-1]
 
             if ((previous_intercept - older_intercept) * (candidate_slope - previous_slope)
                     <= (candidate_intercept - previous_intercept) * (previous_slope - older_slope)):
-                hull.pop()
+                hull_useful_pairs.pop()
             else:
                 break
 
-        hull.append((candidate_slope, candidate_intercept))
+        hull_useful_pairs.append((candidate_slope, candidate_intercept))
 
-    return hull
+    useful_slopes = np.array([p[0] for p in hull_useful_pairs])
+    useful_intercepts = np.array([p[1] for p in hull_useful_pairs])
+
+    return useful_slopes, useful_intercepts
 
 class PiecewiseAffine(RealFunction):
     """
@@ -44,11 +59,7 @@ class PiecewiseAffine(RealFunction):
             domain_end: float = DEFAULT_DOMAIN_END,
             bounded: bool = False
     ):
-        pairs = list(zip(slopes, intercepts))
-        useful_pairs = keep_useful_lines(pairs)
-
-        self._slopes = np.array([p[0] for p in useful_pairs])
-        self._intercepts = np.array([p[1] for p in useful_pairs])
+        self._slopes, self._intercepts = keep_useful_lines(slopes, intercepts)
         self._slopes.flags.writeable = False
         self._intercepts.flags.writeable = False
 
