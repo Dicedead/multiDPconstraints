@@ -758,6 +758,28 @@ def laplace_n_dp_approx(n, mu=1):
         save_to=png(title + "_maxed")
     )
 
+def subsampled_dp_test(eps = 3, delta = 0.1, p = 0.2, title = "subsampled_dp_test"):
+    f = SingleEpsDeltaTradeoff(eps, delta)
+    f_subsampled = TradeOffFunction.subsampled(f, p)
+
+    plot_multiple_functions(
+        [f, f_subsampled],
+        [f"({eps},{delta})-DP", f"({eps},{delta})-DP, subsampled"],
+        ["solid", "dashed"],
+        save_to=png(title)
+    )
+
+def subsampled_gaussian_test(mu = 1.8, p = 0.35, title = "subsampled_gaussian_test"):
+    gaussian = GaussianTradeoff(mu)
+    gaussian_subsampled = TradeOffFunction.subsampled(gaussian, p)
+
+    plot_multiple_functions(
+        [gaussian, gaussian_subsampled],
+        [f"Gaussian({mu})-DP", f"Gaussian({mu})-DP, subsampled"],
+        ["solid", "dashed"],
+        save_to=png(title)
+    )
+
 if __name__ == "__main__":
     # heterogeneous_comparison(eps_1=0.6,eps_2=0.4,x=3,y=2,delta_slack_ls=[0.001], title="heterogeneous_comparison")
     # mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
@@ -784,6 +806,8 @@ if __name__ == "__main__":
     # doubledp_and_multidp_coincide(eps_1=0.3, delta_1=0.0, eps_2=0.15, delta_2=0.02, k_ls=[5],
     #                               title="double_and_multi_comparison")
     # multidp_example_multi_vs_double([0.3, 0.15, 0.04, 0.01], [0.0, 0.02, 0.05, 0.06], 5, "triple_vs_double")
-    laplace_multidp_comp_approx(1, 3, 4, "laplace_3dp_comp_approx")
-    laplace_multidp_comp_approx(1, 2, 4, "laplace_2dp_comp_approx")
-    laplace_n_dp_approx(4)
+    # laplace_multidp_comp_approx(1, 3, 4, "laplace_3dp_comp_approx")
+    # laplace_multidp_comp_approx(1, 2, 4, "laplace_2dp_comp_approx")
+    # laplace_n_dp_approx(4)
+    # subsampled_dp_test(eps = 2, delta = 0.1, p = 0.2, title = "subsampled_dp_test")
+    subsampled_gaussian_test(mu = 1.8, p = 0.35, title = "subsampled_gaussian_test")
