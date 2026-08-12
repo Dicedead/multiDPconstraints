@@ -98,9 +98,17 @@ class TradeOffFunction(RealFunction, ABC):
 
         return IntersectedTradeoffFunction()
 
-    @staticmethod
-    def subsampled(f: 'TradeOffFunction', p: float) -> 'TradeOffFunction':
-        return _InnerSubsampledTradeoffFunction(f, p)
+    def subsampled(self, p: float) -> 'TradeOffFunction':
+        """
+        Return a subsampled version of the current function. Sample this trade-off function
+        with probability p, else sample the identity trade-off function f(x) = 1-x.
+
+        :param p: probability of sampling the current trade-off.
+        :type p: float
+
+        :return: Subsampled version of the current trade-off function.
+        """
+        return _InnerSubsampledTradeoffFunction(self, p)
 
 
 class _InnerSubsampledTradeoffFunction(TradeOffFunction):
@@ -164,7 +172,7 @@ class NormalRotation:
 
     def __init__(self, f: TradeOffFunction):
         self._f = f
-        self._z = -f(0) / np.sqrt(2)
+        self._z = -f(0.) / np.sqrt(2)
 
     def get_z(self):
         """

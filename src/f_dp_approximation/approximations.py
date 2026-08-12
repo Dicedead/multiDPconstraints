@@ -92,6 +92,8 @@ def __lower_approx_midpoint_sum(f: TradeOffFunction, n: int, tol = 1e-9):
 
     g = f.normal_rotation()
     z = -f(0) / np.sqrt(2)
+    if type(z) is not float:
+        z = z.item() # ugly but works so far
 
     if n == 1:
         return np.array([z, 0.0])
