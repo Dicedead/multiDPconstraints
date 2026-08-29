@@ -9,7 +9,7 @@ class VonMisesFisherTradeoff(SmoothTradeOffFunction):
     """
     Represents a von Mises-Fisher-based smooth tradeoff function.
 
-    This class is mostly a work in progress and is not yet fully tested. Should be considered experimental.
+    This class is not yet fully tested. Should be considered experimental.
     """
 
     def __init__(self, n: int, kappa: float, d: float, grid_points: int = 2000):
@@ -47,8 +47,6 @@ class VonMisesFisherTradeoff(SmoothTradeOffFunction):
 
             return self._vmf_mix_pdf(t) * prob_rho
 
-        # Pass full_output=True to suppress the IntegrationWarning for non-smooth clips,
-        # and extract the integral result from the 0-th index of the returned tuple.
         res = quad(integrand, -1, 1, epsabs=1e-4, epsrel=1e-4, limit=200, full_output=True)[0]
         return res
 
@@ -65,9 +63,9 @@ class VonMisesFisherTradeoff(SmoothTradeOffFunction):
                 c_alpha = np.interp(alpha, self._f_vals, self._c_vals)
                 out[i] = np.interp(-c_alpha, self._c_vals, self._f_vals)
 
-        return out
+        return out.reshape(x.shape)
 
-    def derivative_at(self, x: Array) -> Array:
+    def derivative(self, x: Array) -> Array:
         x = np.atleast_1d(x)
         out = np.zeros_like(x, dtype=float)
 
@@ -81,9 +79,9 @@ class VonMisesFisherTradeoff(SmoothTradeOffFunction):
 
             out[i] = -np.exp(-self._kappa * c_alpha)
 
-        return out
+        return out.reshape(x.shape)
 
-    def second_derivative_at(self, x: Array) -> Array:
+    def second_derivative(self, x: Array) -> Array:
         x = np.atleast_1d(x)
         out = np.zeros_like(x, dtype=float)
 
@@ -100,4 +98,4 @@ class VonMisesFisherTradeoff(SmoothTradeOffFunction):
             else:
                 out[i] = np.inf
 
-        return out
+        return out.reshape(x.shape)

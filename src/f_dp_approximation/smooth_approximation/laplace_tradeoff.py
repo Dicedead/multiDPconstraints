@@ -28,11 +28,11 @@ class LaplaceTradeoff(SmoothTradeOffFunction):
     def __pdf_prime(x):
         return -np.sign(x) * spt.laplace.pdf(x)
 
-    def derivative_at(self, x: Array) -> Array:
+    def derivative(self, x: Array) -> Array:
         quantile = spt.laplace.ppf(1 - x)
         return -spt.laplace.pdf(quantile - self._eps) / spt.laplace.pdf(quantile)
 
-    def second_derivative_at(self, x: Array) -> Array:
+    def second_derivative(self, x: Array) -> Array:
         quantile = spt.laplace.ppf(1 - x)
         denom_sq = spt.laplace.pdf(quantile)
         num_first_term = self.__pdf_prime(quantile - self._eps)

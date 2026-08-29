@@ -109,7 +109,7 @@ class MultiEpsDeltaTradeoff(PiecewiseAffine, TradeOffFunction):
     def fixed_point(self) -> float:
         return self._fixed_point
 
-    def subgradient_at(self, x: float, tol=1e-9) -> float:
+    def subgradient(self, x: float, tol=1e-9) -> float:
         return self.subgradient(x, tol)
 
     def __compute_fixed_point(self) -> float:

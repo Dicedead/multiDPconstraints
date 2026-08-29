@@ -83,7 +83,7 @@ def __upper_approx_golden_section(
     return p
 
 
-def __lower_approx_midpoint_sum(f: TradeOffFunction, n: int, tol = 1e-9):
+def __lower_approx_midpoint_sum(f: TradeOffFunction, n: int, tol = SMALL_TOL):
     """
     Finds the partition P = (u0, u1, ..., un) that maximizes the
     Midpoint Riemann Sum S(P) for a convex, non-increasing function f,
@@ -129,7 +129,7 @@ def __lower_approx_midpoint_sum(f: TradeOffFunction, n: int, tol = 1e-9):
     optimal_partition = np.concatenate(([z], result.x, [0.]))
     return optimal_partition
 
-def multi_dp_approx_below(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
+def l1_multi_dp_approx_below(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
     """
     Compute the best L1 approximation of the trade-off function f from below by an n-DP trade-off function.
 
@@ -154,7 +154,7 @@ def multi_dp_approx_below(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
     i = 1
     while i < len(u):
         avg = (u[i] + u[i - 1]) / 2
-        slope = g.subgradient_at(avg)
+        slope = g.subgradient(avg)
         offset = g(avg) - slope * avg
 
         slopes[i-1], offsets[i-1] = NormalRotation.slope_offset_rotation_inversion(slope, offset)
@@ -162,7 +162,7 @@ def multi_dp_approx_below(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
     return MultiEpsDeltaTradeoff.from_slopes_and_offsets(*keep_useful_lines(slopes, offsets))
 
 
-def multi_dp_approx_above(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
+def l1_multi_dp_approx_above(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
     """
     Compute the best L1 approximation of the trade-off function f from above by an n-DP trade-off function.
 
@@ -195,4 +195,132 @@ def multi_dp_approx_above(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
     return MultiEpsDeltaTradeoff.from_slopes_and_offsets(*keep_useful_lines(slopes, offsets))
 
 
+def linf_multi_dp_approx_above(f: TradeOffFunction, n: int):
+    """
+    Compute the best Linfinity approximation of the trade-off function f from above by an n-DP trade-off function.
 
+    :param f: trade-off function to approximate:
+    :type f: TradeOffFunction
+
+    :param n: number of DP degrees of freedom.
+    :type n: int
+
+    :return: MultiEpsDeltaTradeoff object representing the approximation.
+    :rtype: MultiEpsDeltaTradeoff
+    """
+    c_fixed = f.fixed_point()
+
+    def obj_above(vars):
+        return vars[-1]
+
+    def constraints_above(vars):
+        P = np.concatenate(([0], vars[:-1], [c_fixed]))
+        max_err = vars[-1]
+        cons = []
+
+        for i in range(len(P) - 1):
+            cons.append(P[i + 1] - P[i] - TOL) # t_i+1 < t_i constraint
+
+        for i in range(1, n + 1):
+            x_prev, x_curr = P[i - 1], P[i]
+
+            if x_curr - x_prev < SMALL_TOL:
+                cons.append(max_err)
+                continue
+
+            y_prev, y_curr = f(x_prev), f(x_curr)
+            m = (y_curr - y_prev) / (x_curr - x_prev)
+            c = y_prev - m * x_prev
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                res = spo.minimize_scalar(
+                    lambda x: f(x) - (m * x + c),
+                    bounds=(x_prev, x_curr),
+                    method='bounded'
+                )
+            cons.append(max_err - (-res.fun))
+
+        return np.array(cons)
+
+    P_init = np.linspace(0, c_fixed, n + 1)[1:-1]
+    P_init_in = np.append(P_init, 0.1)
+
+    res_above = spo.minimize(
+        obj_above, P_init_in, method='SLSQP',
+        constraints={'type': 'ineq', 'fun': constraints_above},
+        options={'disp': False, 'ftol': 1e-8, 'maxiter': 500}
+    )
+    P_star = np.concatenate(([0], res_above.x[:-1], [c_fixed]))
+
+    slopes, intercepts = [], []
+    for i in range(1, n + 1):
+        m = (f(P_star[i]) - f(P_star[i - 1])) / (P_star[i] - P_star[i - 1])
+        c = f(P_star[i - 1]) - m * P_star[i - 1]
+        slopes.append(m)
+        intercepts.append(c)
+
+    return MultiEpsDeltaTradeoff.from_slopes_and_offsets(*keep_useful_lines(slopes, intercepts))
+
+
+def linf_multi_dp_approx_below(f: TradeOffFunction, n: int):
+    """
+    Compute the best Linfinity approximation of the trade-off function f from below by an n-DP trade-off function.
+
+    :param f: trade-off function to approximate:
+    :type f: TradeOffFunction
+
+    :param n: number of DP degrees of freedom.
+    :type n: int
+
+    :return: MultiEpsDeltaTradeoff object representing the approximation.
+    :rtype: MultiEpsDeltaTradeoff
+    """
+    x_star = f.fixed_point()
+    f_prime_func = f.subgradient
+
+    def obj_below(vars):
+        return vars[-1]
+
+    def constraints_below(vars):
+        P = vars[:-1]
+        max_err = vars[-1]
+        cons = []
+
+        cons.append(P[0] - TOL)
+        for i in range(n - 1):
+            cons.append(P[i + 1] - P[i] - TOL)
+        cons.append(x_star - P[-1] - TOL)
+
+        subgrads = np.array([f_prime_func(t) for t in P])
+        d_offsets = np.array([f(t) - subgrads[i] * t for i, t in enumerate(P)])
+
+        cons.append(max_err - (f(0) - d_offsets[0]))
+
+        for i in range(n - 1):
+            if abs(subgrads[i] - subgrads[i + 1]) < SMALL_TOL:
+                x_i = P[i]
+            else:
+                x_i = (d_offsets[i + 1] - d_offsets[i]) / (subgrads[i] - subgrads[i + 1])
+            x_i = np.clip(x_i, 0, x_star)
+            cons.append(max_err - (f(x_i) - (subgrads[i] * x_i + d_offsets[i])))
+
+        x_n = d_offsets[-1] / (1 - subgrads[-1]) if abs(subgrads[-1] - 1.0) > SMALL_TOL else 0
+        cons.append(max_err - (f(x_n) - x_n))
+
+        return np.array(cons)
+
+    P_init = np.linspace(0, x_star, n + 2)[1:-1]
+    P_init_in = np.append(P_init, 0.1)
+
+    res_below = spo.minimize(
+        obj_below, P_init_in, method='SLSQP',
+        constraints={'type': 'ineq', 'fun': constraints_below},
+        options={'disp': False, 'ftol': 1e-8, 'maxiter': 500}
+    )
+
+    P_star = res_below.x[:-1]
+    slopes = [f_prime_func(t) for t in P_star]
+    intercepts = [f(t) - m * t for t, m in zip(P_star, slopes)]
+
+    return MultiEpsDeltaTradeoff.from_slopes_and_offsets(*keep_useful_lines(slopes, intercepts))

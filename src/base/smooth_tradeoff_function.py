@@ -27,7 +27,7 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
         pass
 
     @abstractmethod
-    def derivative_at(self, x: Array) -> Array:
+    def derivative(self, x: Array) -> Array:
         """
         Evaluate the derivative of the function at x.
 
@@ -38,7 +38,7 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
         pass
 
     @abstractmethod
-    def second_derivative_at(self, x: Array) -> Array:
+    def second_derivative(self, x: Array) -> Array:
         """
          Evaluate the second derivative of the function at x.
 
@@ -70,16 +70,16 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
 
         self._cached_c = spo.root_scalar(
             f=lambda x:self(x) - x,
-            fprime=self.derivative_at,
-            fprime2=self.second_derivative_at,
+            fprime=self.derivative,
+            fprime2=self.second_derivative,
             bracket=(0, 1),
             x0=1./2.
         ).root
 
         return self._cached_c
 
-    def subgradient_at(self, x: float) -> float:
-        return self.derivative_at(x)
+    def subgradient(self, x: float) -> float:
+        return self.derivative(x)
 
     def rotation_change(self, u: float) -> Callable[[Array], Array]:
         """
@@ -101,7 +101,7 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
         :return: Derivative of the function to minimize to obtain the rotated evaluation point.
         :rtype: Callable[[Array], Array]
         """
-        return lambda x: (1 - self.derivative_at(x))/np.sqrt(2)
+        return lambda x: (1 - self.derivative(x)) / np.sqrt(2)
 
     def rotation_change_second_deriv(self) -> Callable[[Array], Array]:
         """
@@ -112,7 +112,7 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
         :return: Second derivative of the function to minimize to obtain the rotated evaluation point.
         :rtype: Callable[[Array], Array]
         """
-        return lambda x: - self.second_derivative_at(x)/np.sqrt(2)
+        return lambda x: - self.second_derivative(x) / np.sqrt(2)
 
     @staticmethod
     def compute_eps_from_alpha(alpha) -> float:
@@ -138,7 +138,7 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
          """
         return 1 - np.sqrt(2) * beta/(alpha + 1)
 
-    def approx_from_below_2_dp(self, g: 'SmoothNormalRotation' = None) -> MultiEpsDeltaTradeoff:
+    def l1_smooth_approx_2dp_below(self, g: 'SmoothNormalRotation' = None) -> MultiEpsDeltaTradeoff:
         """
         Compute an approximation from below for the given tradeoff function.
 
@@ -162,7 +162,7 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
         t_1 = (t_star + g.get_z())/2
         t_2 = t_star/2
 
-        alpha_2 = g.derivative_at(t_2)
+        alpha_2 = g.derivative(t_2)
         beta_2 = g.call(t_2) - alpha_2 * t_2
         eps_2 = SmoothTradeOffFunction.compute_eps_from_alpha(alpha_2)
         delta_2 = SmoothTradeOffFunction.compute_delta_from_alpha_beta(alpha_2, beta_2)
@@ -170,14 +170,14 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
         if np.abs(t_1 - t_star) < TOL:
             return SingleEpsDeltaTradeoff(eps_2, delta_2)
 
-        alpha_1 = g.derivative_at(t_1)
+        alpha_1 = g.derivative(t_1)
         beta_1 = g.call(t_1) - alpha_1 * t_1
         eps_1 = SmoothTradeOffFunction.compute_eps_from_alpha(alpha_1)
         delta_1 = SmoothTradeOffFunction.compute_delta_from_alpha_beta(alpha_1, beta_1)
 
         return MultiEpsDeltaTradeoff([eps_1, eps_2], [delta_1, delta_2])
 
-    def approx_from_above_2_dp(self) -> MultiEpsDeltaTradeoff:
+    def l1_smooth_approx_2dp_above(self) -> MultiEpsDeltaTradeoff:
         """
         Computes an approximation from above for the tradeoff function, using provided
         methods to calculate derivatives and fixed points. Depending on conditions, it
@@ -194,8 +194,8 @@ class SmoothTradeOffFunction(TradeOffFunction, ABC):
             t_s = t_approx_above
         else:
             t_s = spo.root_scalar(
-                f=lambda t: self.derivative_at(t) - offset,
-                fprime=self.second_derivative_at,
+                f=lambda t: self.derivative(t) - offset,
+                fprime=self.second_derivative,
                 x0=self.fixed_point()/2
             ).root
 
@@ -240,16 +240,16 @@ class SmoothNormalRotation(NormalRotation):
             x1 = self.invert_u(u1)
             x2 = self.invert_u(u2)
 
-            g_prime_u1 = self.derivative_at(u1, x1)
-            g_prime_u2 = self.derivative_at(u2, x2)
+            g_prime_u1 = self.derivative(u1, x1)
+            g_prime_u2 = self.derivative(u2, x2)
 
             g_1 = self.call(u1, x1) + g_prime_u1 * (t-self._z)/2
             g_2 = self.call(u2, x2) + g_prime_u2 * t/2
 
             call = g_1 - g_2
 
-            deriv_1 = g_prime_u1 + self.second_derivative_at(u1, x1) * (t-self._z)/4
-            deriv_2 = g_prime_u2 + self.second_derivative_at(u2, x2) * t/4
+            deriv_1 = g_prime_u1 + self.second_derivative(u1, x1) * (t - self._z) / 4
+            deriv_2 = g_prime_u2 + self.second_derivative(u2, x2) * t / 4
 
             deriv = deriv_1 - deriv_2
 
@@ -290,10 +290,10 @@ class SmoothNormalRotation(NormalRotation):
     def __call__(self, u: Array) -> Array:
         return self.call(u)
 
-    def subgradient_at(self, u: float) -> Array:
-        return self.derivative_at(u)
+    def subgradient(self, u: float) -> Array:
+        return self.derivative(u)
 
-    def derivative_at(self, u: Array, x_u: Array = None) -> Array:
+    def derivative(self, u: Array, x_u: Array = None) -> Array:
         """
         Evaluate the derivative of rotated function at `u` using the precomputed `x_u` values,
         or compute them if not provided.
@@ -305,10 +305,10 @@ class SmoothNormalRotation(NormalRotation):
         """
         if x_u is None:
             x_u = [self.invert_u(ui) for ui in u] if type(u) is Array else self.invert_u(u)
-        f_prime_x_u = self._f.derivative_at(x_u)
+        f_prime_x_u = self._f.derivative(x_u)
         return NormalRotation.slope_forward_rotation(f_prime_x_u)
 
-    def second_derivative_at(self, u: Array, x_u: Array = None) -> Array:
+    def second_derivative(self, u: Array, x_u: Array = None) -> Array:
         """
         Evaluate the second derivative of rotated function at `u` using the precomputed `x_u` values,
         or compute them if not provided.
@@ -320,6 +320,6 @@ class SmoothNormalRotation(NormalRotation):
         """
         if x_u is None:
             x_u = [self.invert_u(ui) for ui in u] if type(u) is Array else self.invert_u(u)
-        f_prime_x_u = self._f.derivative_at(x_u)
-        f_second_x_u = self._f.second_derivative_at(x_u)
+        f_prime_x_u = self._f.derivative(x_u)
+        f_second_x_u = self._f.second_derivative(x_u)
         return (2 * np.sqrt(2) * f_second_x_u)/((1-f_prime_x_u) ** 3)

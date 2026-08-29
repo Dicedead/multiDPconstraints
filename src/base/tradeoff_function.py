@@ -41,9 +41,11 @@ class TradeOffFunction(RealFunction, ABC):
     def normal_rotation(self) -> 'NormalRotation':
         return NormalRotation(self)
 
-    @abstractmethod
-    def subgradient_at(self, x: float) -> float:
-        pass
+    def subgradient(self, x: float) -> float:
+        dx = DX_DIFF
+        if dx < x < 1 - dx:
+            return (self(x + dx) - self(x - dx)) / (2 * dx)
+        return (self(x + dx) - self(x)) / dx if x < 1 else (self(x) - self(x - dx)) / dx
 
     @abstractmethod
     def __call__(self, x: Array) -> Array:
@@ -93,8 +95,8 @@ class TradeOffFunction(RealFunction, ABC):
                 values = np.abs(self(candidates) - candidates)
                 return candidates[np.argmin(values)]
 
-            def subgradient_at(self, x: float) -> float:
-                return f_arr[np.argmax(np.array([f(x) for f in f_arr]))].subgradient_at(x)
+            def subgradient(self, x: float) -> float:
+                return f_arr[np.argmax(np.array([f(x) for f in f_arr]))].subgradient(x)
 
         return IntersectedTradeoffFunction()
 
@@ -131,7 +133,7 @@ class _InnerSubsampledTradeoffFunction(TradeOffFunction):
         for i in range(len(x)):
             out[i] = spo.root_scalar(
                 f=lambda arr: self._f_p(arr) - x[i],
-                fprime=lambda arr: self._p * self._f.subgradient_at(arr) - (1-self._p),
+                fprime=lambda arr: self._p * self._f.subgradient(arr) - (1 - self._p),
                 x0=self._f_p_x_star,
                 bracket=(0, 1)
             ).root
@@ -145,8 +147,8 @@ class _InnerSubsampledTradeoffFunction(TradeOffFunction):
 
     def __call__(self, x: Array) -> Array:
         x = np.array(x)
-        assert np.all(x <= 1)
-        assert np.all(x >= 0)
+        # assert np.all(x <= 1)
+        # assert np.all(x >= 0)
 
         outs = np.zeros_like(x)
         outs[x < self._x_star] = self._f_p(x[x < self._x_star])
@@ -154,15 +156,15 @@ class _InnerSubsampledTradeoffFunction(TradeOffFunction):
         outs[x > self._f_p_x_star] = self._f_p_inv(x[x > self._f_p_x_star])
         return outs
 
-    def subgradient_at(self, x: float) -> float:
+    def subgradient(self, x: float) -> float:
         assert 0 <= x <= 1
 
         if x < self._x_star:
-            return self._p * self._f.subgradient_at(x) - (1 - self._p)
+            return self._p * self._f.subgradient(x) - (1 - self._p)
         elif x < self._f_p_x_star:
             return -1
         else:
-            return 1 / (self._p * self._f.subgradient_at(self._f_p_inv(x)) - (1 - self._p))
+            return 1 / (self._p * self._f.subgradient(self._f_p_inv(x)) - (1 - self._p))
 
 
 class NormalRotation:
@@ -209,8 +211,8 @@ class NormalRotation:
             x_u = [self.invert_u(ui) for ui in u] if type(u) is Array else self.invert_u(u)
         return (x_u + self._f(x_u)) / np.sqrt(2)
 
-    def subgradient_at(self, u: float) -> Array:
-        return NormalRotation.slope_forward_rotation(self._f.subgradient_at(self.invert_u(u)))
+    def subgradient(self, u: float) -> Array:
+        return NormalRotation.slope_forward_rotation(self._f.subgradient(self.invert_u(u)))
 
     def __call__(self, u: Array) -> Array:
         return self.call(u)

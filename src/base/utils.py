@@ -8,10 +8,11 @@ COLOR_1 = '#377eb8'
 COLOR_2 = '#ff7f00'
 COLOR_3 = '#4daf4a'
 COLOR_4 = '#f781bf'
+COLOR_5 = '#a65628'
 
 COLORBLIND_FRIENDLY_PALETTE =  \
         [COLOR_1, COLOR_2, COLOR_3,
-         COLOR_4, '#a65628', '#984ea3',
+         COLOR_4, COLOR_5, '#984ea3',
          '#999999', '#e41a1c', '#dede00']
 
 

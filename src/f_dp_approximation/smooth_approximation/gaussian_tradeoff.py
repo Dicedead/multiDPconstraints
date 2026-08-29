@@ -39,11 +39,11 @@ class GaussianTradeoff(SmoothTradeOffFunction):
     def __pdf_prime(x):
         return (-x/np.sqrt(2*np.pi)) * np.exp(-(x**2)/2)
 
-    def derivative_at(self, x: Array) -> Array:
+    def derivative(self, x: Array) -> Array:
         quantile = spt.norm.ppf(1 - x)
         return -spt.norm.pdf(quantile - self._mu) / spt.norm.pdf(quantile)
 
-    def second_derivative_at(self, x: Array) -> Array:
+    def second_derivative(self, x: Array) -> Array:
         quantile = spt.norm.ppf(1 - x)
         denom_sq = spt.norm.pdf(quantile)
         num_first_term = self.__pdf_prime(quantile - self._mu)
