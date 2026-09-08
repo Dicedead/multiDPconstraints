@@ -9,12 +9,20 @@ COLOR_2 = '#ff7f00'
 COLOR_3 = '#4daf4a'
 COLOR_4 = '#f781bf'
 COLOR_5 = '#a65628'
+COLOR_6 = '#984ea3'
+COLOR_7 = '#999999'
+COLOR_8 = '#e41a1c'
+COLOR_9 = '#dede00'
 
 COLORBLIND_FRIENDLY_PALETTE =  \
         [COLOR_1, COLOR_2, COLOR_3,
-         COLOR_4, COLOR_5, '#984ea3',
-         '#999999', '#e41a1c', '#dede00']
+         COLOR_4, COLOR_5, COLOR_6,
+         COLOR_7, COLOR_8, COLOR_9]
 
+COLOR_PALETTE = COLORBLIND_FRIENDLY_PALETTE
+
+_DPI = 200.
+_FIGSIZE = (5, 5)
 
 def plot_multiple_functions(
         f_arr: List[TradeOffFunction],
@@ -66,14 +74,14 @@ def plot_multiple_functions(
         linestyles = ["solid"] * len(f_arr)
 
     if colors is None:
-        colors = COLORBLIND_FRIENDLY_PALETTE[:len(f_arr)]
+        colors = COLOR_PALETTE[:len(f_arr)]
 
     if orders is None:
         orders = range(len(f_arr))
 
 
     x = np.linspace(start, end, num_points)
-    fig = plt.figure()
+    fig = plt.figure(figsize=_FIGSIZE, dpi=_DPI)
     ax = fig.add_subplot()
     for f, label, linestyle, color, order in zip(f_arr, labels, linestyles, colors, orders):
         plt.plot(x, f(x), label=label, linestyle=linestyle, color=color, zorder=order)

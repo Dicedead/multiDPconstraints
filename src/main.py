@@ -1,7 +1,8 @@
 import numpy as np
 
 from base.tradeoff_function import TradeOffFunction
-from base.utils import plot_multiple_functions, COLOR_1, COLOR_2, COLOR_3, COLOR_4, COLOR_5
+from base.utils import plot_multiple_functions, COLOR_1, COLOR_2, COLOR_3, COLOR_4, COLOR_5, COLOR_6, COLOR_7, COLOR_8, \
+    COLOR_9, COLOR_PALETTE
 from f_dp_approximation.approximations import l1_multi_dp_approx_above, l1_multi_dp_approx_below, \
     linf_multi_dp_approx_below, linf_multi_dp_approx_above
 from f_dp_approximation.smooth_approximation.gaussian_tradeoff import GaussianTradeoff
@@ -298,8 +299,8 @@ def gaussian_tradeoff_and_compos_approx(mu, k, title):
         ],
         [
             f"{float(mu):.2}-GDP",
-            f"Lower approx of {float(mu):.2}-GDP",
-            f"Upper approx of {float(mu):.2}-GDP",
+            f"Lower app. of {float(mu):.2}-GDP",
+            f"Upper app. of {float(mu):.2}-GDP",
             f"{float(mu_composed):.2}-GDP ({k}-comp. of {float(mu):.2}-GDP)",
             f"{k}-comp. lower approx",
             f"{k}-comp. upper approx"
@@ -426,8 +427,8 @@ def gaussian_compos_approx_tradeoff_and_two_compos(mu, k1, k2, title):
         ],
         [
             f"{float(mu):.2}-GDP",
-            f"Upper approx of {float(mu):.2}-GDP",
-            f"Lower approx of {float(mu):.2}-GDP",
+            f"Upper app. of {float(mu):.2}-GDP",
+            f"Lower app. of {float(mu):.2}-GDP",
             f"{k1}-composition of {float(mu):.2}-GDP",
             f"{k1}-comp. upper approx",
             f"{k1}-comp. lower approx",
@@ -593,7 +594,7 @@ def gaussian_n_dp_approx():
 
     plot_multiple_functions(
         f_arr=[gaussian, below_approx, above_approx],
-        labels=["1-GDP", f"{n}-DP approx below", f"{n}-DP approx above"],
+        labels=["1-GDP", f"{n}-DP app. below", f"{n}-DP app. above"],
         colors=[COLOR_1, COLOR_3, COLOR_2],
         linestyles=["solid", "dashed", "dashed"],
         save_to=png(title + "_maxed")
@@ -725,8 +726,8 @@ def laplace_multidp_comp_approx(eps, n, k, title):
         ],
         [
             f"Laplace({eps})-DP",
-            f"{n}-DP {k}-comp. approx below",
-            f"{n}-DP {k}-comp. approx above"
+            f"{n}-DP {k}-comp. app. below",
+            f"{n}-DP {k}-comp. app. above"
         ],
 
         ["solid",
@@ -768,7 +769,7 @@ def laplace_n_dp_approx(n, mu=1):
 
     plot_multiple_functions(
         f_arr=[lap, below_approx, above_approx],
-        labels=[f"Laplace({mu})-DP", f"{n}-DP approx below", f"{n}-DP approx above"],
+        labels=[f"Laplace({mu})-DP", f"{n}-DP app. below", f"{n}-DP app. above"],
         colors=[COLOR_1, COLOR_3, COLOR_2],
         linestyles=["solid", "dashed", "dashed"],
         save_to=png(title + "_maxed")
@@ -810,7 +811,7 @@ def subsampled_laplace_approx(n, mu=1, p=0.2, title="laplace_subsampled_n_dp_app
 
     plot_multiple_functions(
         f_arr=[lap, lap_subs, below_approx, above_approx],
-        labels=[f"Lap({mu})", f"{p}-subsampled Lap({mu})", f"{n}-DP approx below", f"{n}-DP approx above"],
+        labels=[f"Lap({mu})", f"{p}-subsampled Lap({mu})", f"{n}-DP app. below", f"{n}-DP app. above"],
         colors=[COLOR_4, COLOR_1, COLOR_3, COLOR_2],
         linestyles=["dotted", "solid", "dashed", "dashed"],
         save_to=png(title)
@@ -831,8 +832,8 @@ def subsampled_laplace_comp_approx(n, k, mu=1, p=0.2, title="laplace_subsampled_
 
     plot_multiple_functions(
         f_arr=[lap_subs, f_below, f_above, f_below_comp, f_above_comp],
-        labels=[f"Subsampled Lap({mu})", f"{n}-DP approx below", f"{n}-DP approx above", f"{k}-comp. approx below",
-                f"{k}-comp. approx above"],
+        labels=[f"Subsampled Lap({mu})", f"{n}-DP app. below", f"{n}-DP app. above", f"{k}-comp. app. below",
+                f"{k}-comp. app. above"],
         colors=[COLOR_1, COLOR_3, COLOR_2, COLOR_3, COLOR_2],
         linestyles=["solid", "dashed", "dashed", "dotted", "dotted"],
         save_to=png(title)
@@ -865,7 +866,7 @@ def subsampled_vmf_n_dp_approx(n, p, dimensions=3., kappa=2., max_angle=np.cos(n
 
     plot_multiple_functions(
         f_arr=[vmf, vmf_subs, below_approx, above_approx],
-        labels=[f"VMF", f"{p}-subsampled VMF", f"{n}-DP approx below", f"{n}-DP approx above"],
+        labels=[f"VMF", f"{p}-subsampled VMF", f"{n}-DP app. below", f"{n}-DP app. above"],
         colors=[COLOR_4, COLOR_1, COLOR_3, COLOR_2],
         linestyles=["dotted", "solid", "dashed", "dashed"],
         save_to=png(title)
@@ -883,14 +884,14 @@ def subsampled_gaussian_n_dp_comp_test(n, k, mu=1., p=0.2, title="subsampled_gau
 
     plot_multiple_functions(
         f_arr=[gaussian_subsampled, f_below, f_above, f_below_comp, f_above_comp],
-        labels=[f"Subsampled G({mu})", f"{n}-DP approx below", f"{n}-DP approx above", f"{k}-comp. approx below",
-                f"{k}-comp. approx above"],
+        labels=[f"Subsampled G({mu})", f"{n}-DP app. below", f"{n}-DP app. above", f"{k}-comp. app. below",
+                f"{k}-comp. app. above"],
         colors=[COLOR_1, COLOR_3, COLOR_2, COLOR_3, COLOR_2],
         linestyles=["solid", "dashed", "dashed", "dotted", "dotted"],
         save_to=png(title)
     )
 
-def laplace_tradeoff_approx_multip_norms(n, eps=1., title="laplace_tradeoff_approx_multip_norms"):
+def laplace_tradeoff_approx_multip_norms(n, k ,eps=1., title="laplace_tradeoff_approx_multip_norms"):
     """
     Plot the n-DP lower and upper L1/Linf approximations of the Laplace trade-off function.
     """
@@ -900,6 +901,12 @@ def laplace_tradeoff_approx_multip_norms(n, eps=1., title="laplace_tradeoff_appr
     linf_eps_approx_below = linf_multi_dp_approx_below(laplace_eps, n)
     linf_eps_approx_above = linf_multi_dp_approx_above(laplace_eps, n)
 
+    l1_below_comp = privacy_region_composition_multi_dp(l1_eps_approx_below.get_eps_list(), l1_eps_approx_below.get_delta_list(), k)
+    l1_above_comp = privacy_region_composition_multi_dp(l1_eps_approx_above.get_eps_list(), l1_eps_approx_above.get_delta_list(), k)
+
+    linf_below_comp = privacy_region_composition_multi_dp(linf_eps_approx_below.get_eps_list(), linf_eps_approx_below.get_delta_list(), k)
+    linf_above_comp = privacy_region_composition_multi_dp(linf_eps_approx_above.get_eps_list(), linf_eps_approx_above.get_delta_list(), k)
+
 
     plot_multiple_functions(
         [
@@ -907,28 +914,44 @@ def laplace_tradeoff_approx_multip_norms(n, eps=1., title="laplace_tradeoff_appr
             l1_eps_approx_below,
             l1_eps_approx_above,
             linf_eps_approx_below,
-            linf_eps_approx_above
+            linf_eps_approx_above,
+            l1_below_comp,
+            l1_above_comp,
+            linf_below_comp,
+            linf_above_comp,
         ],
         [
             f"Laplace({eps})-DP",
-            "L1 approx below",
-            "L1 approx above",
-            "Linf approx below",
-            "Linf approx above"
+            f"$L_1$ {n}-DP app. below",
+            f"$L_1$ {n}-DP app. above",
+            f"$L_\\infty$ {n}-DP app. below",
+            f"$L_\\infty$ {n}-DP app. above",
+            f"$L_1$ {k}-comp. app. below",
+            f"$L_1$ {k}-comp. app. above",
+            f"$L_\\infty$ {k}-comp. app. below",
+            f"$L_\\infty$ {k}-comp. app. above",
         ],
         [
-            "dotted",
-            "solid",
             "solid",
             "dashed",
             "dashed",
+            dotted_custom,
+            dotted_custom,
+            "dashed",
+            "dashed",
+            dotted_custom,
+            dotted_custom,
         ],
         [
             COLOR_1,
             COLOR_2,
             COLOR_2,
             COLOR_3,
-            COLOR_3
+            COLOR_3,
+            COLOR_8,
+            COLOR_8,
+            COLOR_6,
+            COLOR_6
         ],
         save_to=png(title)
     )
@@ -966,25 +989,25 @@ def gaussian_tradeoff_approx_multip_norms(n, k, mu=1., title="gaussian_tradeoff_
         ],
         [
             f"Gaussian({mu})-DP",
-            "L1 approx below",
-            "L1 approx above",
-            "Linf approx below",
-            "Linf approx above",
-            "L1 comp. approx below",
-            "L1 comp. approx above",
-            "Linf comp. approx below",
-            "Linf comp. approx above",
+            f"$L_1$ {n}-DP app. below",
+            f"$L_1$ {n}-DP app. above",
+            f"$L_\\infty$ {n}-DP app. below",
+            f"$L_\\infty$ {n}-DP app. above",
+            f"$L_1$ {k}-comp. app. below",
+            f"$L_1$ {k}-comp. app. above",
+            f"$L_\\infty$ {k}-comp. app. below",
+            f"$L_\\infty$ {k}-comp. app. above",
         ],
         [
-            "dotted",
-            "solid",
             "solid",
             "dashed",
             "dashed",
-            "solid",
-            "solid",
+            dotted_custom,
+            dotted_custom,
             "dashed",
             "dashed",
+            dotted_custom,
+            dotted_custom,
         ],
         [
             COLOR_1,
@@ -992,10 +1015,10 @@ def gaussian_tradeoff_approx_multip_norms(n, k, mu=1., title="gaussian_tradeoff_
             COLOR_2,
             COLOR_3,
             COLOR_3,
-            COLOR_4,
-            COLOR_4,
-            COLOR_5,
-            COLOR_5
+            COLOR_8,
+            COLOR_8,
+            COLOR_6,
+            COLOR_6
         ],
         save_to=png(title)
     )
@@ -1034,19 +1057,19 @@ def subsampled_gaussian_tradeoff_approx_multip_norms(n, k, mu=1., p=0.2, title="
         ],
         [
             f"{p}-subsampled G({mu})-DP",
-            "L1 approx below",
-            "L1 approx above",
-            "Linf approx below",
-            "Linf approx above",
-            "L1 comp. approx below",
-            "L1 comp. approx above",
-            "Linf comp. approx below",
-            "Linf comp. approx above",
+            f"$L_1$ {n}-DP app. below",
+            f"$L_1$ {n}-DP app. above",
+            f"$L_\\infty$ {n}-DP app. below",
+            f"$L_\\infty$ {n}-DP app. above",
+            f"$L_1$ {k}-comp. app. below",
+            f"$L_1$ {k}-comp. app. above",
+            f"$L_\\infty$ {k}-comp. app. below",
+            f"$L_\\infty$ {k}-comp. app. above",
         ],
         [
-            "dotted",
             "solid",
-            "solid",
+            dotted_custom,
+            dotted_custom,
             "dashed",
             "dashed",
             "solid",
@@ -1069,41 +1092,191 @@ def subsampled_gaussian_tradeoff_approx_multip_norms(n, k, mu=1., p=0.2, title="
     )
 
 
+def subs_gaussian_compos_composition_approx(n, k, mu=1., p=0.1, title="subs_gaussian_compos_approx"):
+    """
+    Plot the n-DP lower and upper L_infinity approximations of the subsampled gaussian trade-off composition
+    along with the approximation of the subsampled trade_off itself.
+    """
+    subs_g_mu = GaussianTradeoff(mu).subsampled(p)
+
+    lower_app = linf_multi_dp_approx_below(subs_g_mu, n)
+    upper_app = linf_multi_dp_approx_above(subs_g_mu, n)
+
+    eps_ls = lower_app.get_eps_list()
+    delta_ls = lower_app.get_delta_list()
+    lower_app_comp = privacy_region_composition_multi_dp(eps_ls, delta_ls, k)
+
+    eps_ls = upper_app.get_eps_list()
+    delta_ls = upper_app.get_delta_list()
+    upper_app_comp = privacy_region_composition_multi_dp(eps_ls, delta_ls, k)
+
+    plot_multiple_functions(
+        [
+            subs_g_mu,
+            upper_app,
+            lower_app,
+            upper_app_comp,
+            lower_app_comp
+        ],
+        [
+            f"{p}-subs. G({mu})-DP",
+            f"$L_\\infty$ {n}-DP upper app.",
+            f"$L_\\infty$ {n}-DP lower app.",
+            f"{k}-comp. upper app.",
+            f"{k}-comp. lower app.",
+        ],
+        [
+            "solid",
+            dotted_custom,
+            "dashed",
+            dotted_custom,
+            "dashed"
+         ],
+        [COLOR_1] * 3 + [COLOR_2] * 2,
+        save_to=png(title)
+    )
+
+def subs_laplace_compos_composition_approx(n, k, eps=1., p=0.1, title="subs_laplace_compos_approx"):
+    """
+    Plot the n-DP lower and upper L_infinity approximations of the subsampled Laplace trade-off composition
+    along with the approximation of the subsampled trade_off itself.
+    """
+    subs_lap = LaplaceTradeoff(eps).subsampled(p)
+
+    lower_app = linf_multi_dp_approx_below(subs_lap, n)
+    upper_app = linf_multi_dp_approx_above(subs_lap, n)
+
+    eps_ls = lower_app.get_eps_list()
+    delta_ls = lower_app.get_delta_list()
+    lower_app_comp = privacy_region_composition_multi_dp(eps_ls, delta_ls, k)
+
+    eps_ls = upper_app.get_eps_list()
+    delta_ls = upper_app.get_delta_list()
+    upper_app_comp = privacy_region_composition_multi_dp(eps_ls, delta_ls, k)
+
+    plot_multiple_functions(
+        [
+            subs_lap,
+            upper_app,
+            lower_app,
+            upper_app_comp,
+            lower_app_comp
+        ],
+        [
+            f"{p}-subs. Lap({eps})-DP",
+            f"$L_\\infty$ {n}-DP upper app.",
+            f"$L_\\infty$ {n}-DP lower app.",
+            f"{k}-comp. upper app.",
+            f"{k}-comp. lower app.",
+        ],
+        [
+            "solid",
+            dotted_custom,
+            "dashed",
+            dotted_custom,
+            "dashed"
+         ],
+        [COLOR_1] * 3 + [COLOR_2] * 2,
+        save_to=png(title)
+    )
+
+
+def subs_laplace_vs_gaussian_composition_comparison(n, k, eps=1., mu=1., p=0.1, title="subs_lap_vs_gaus_compos_approx"):
+    """
+    Plot the n-DP lower and upper L_infinity approximations of the subsampled Laplace trade-off composition
+    versus the Gaussian's.
+    """
+    subs_g_mu = GaussianTradeoff(mu).subsampled(p)
+    subs_lap = LaplaceTradeoff(eps).subsampled(p)
+
+    lower_app = linf_multi_dp_approx_below(subs_g_mu, n)
+    upper_app = linf_multi_dp_approx_above(subs_g_mu, n)
+
+    eps_ls = lower_app.get_eps_list()
+    delta_ls = lower_app.get_delta_list()
+    lower_app_comp_gau = privacy_region_composition_multi_dp(eps_ls, delta_ls, k)
+
+    eps_ls = upper_app.get_eps_list()
+    delta_ls = upper_app.get_delta_list()
+    upper_app_comp_gau = privacy_region_composition_multi_dp(eps_ls, delta_ls, k)
+
+    lower_app = linf_multi_dp_approx_below(subs_lap, n)
+    upper_app = linf_multi_dp_approx_above(subs_lap, n)
+
+    eps_ls = lower_app.get_eps_list()
+    delta_ls = lower_app.get_delta_list()
+    lower_app_comp_lap = privacy_region_composition_multi_dp(eps_ls, delta_ls, k)
+
+    eps_ls = upper_app.get_eps_list()
+    delta_ls = upper_app.get_delta_list()
+    upper_app_comp_lap = privacy_region_composition_multi_dp(eps_ls, delta_ls, k)
+
+    plot_multiple_functions(
+        [
+            subs_g_mu,
+            subs_lap,
+            upper_app_comp_lap,
+            lower_app_comp_lap,
+            upper_app_comp_gau,
+            lower_app_comp_gau,
+        ],
+        [
+            f"{p}-subs. G({mu})-DP",
+            f"{p}-subs. Lap({eps})-DP",
+            f"Lap {k}-comp. upper app.",
+            f"Lap {k}-comp. lower app.",
+            f"GDP {k}-comp. upper app.",
+            f"GDP {k}-comp. lower app.",
+        ],
+        [
+            "solid",
+            "dotted",
+            "dashed",
+            "dashed",
+            dotted_custom,
+            dotted_custom,
+         ],
+        [
+            COLOR_1,
+            COLOR_2,
+            COLOR_3,
+            COLOR_3,
+            COLOR_8,
+            COLOR_8
+        ],
+        save_to=png(title)
+    )
+
+def composition_improves_as_n_increases(k, eps_ls, delta_ls, title="composition_improves_as_n_increases"):
+    assert len(eps_ls) == len(delta_ls)
+    n = len(eps_ls)
+
+    f_0 = SingleEpsDeltaTradeoff(eps_ls[0], delta_ls[0])
+    f_arr: list[TradeOffFunction] = [f_0]
+    f_arr_composed: list[TradeOffFunction] = [privacy_region_composition_exact(eps_ls[0], delta_ls[0], k)]
+    for i in range(2, n+1):
+        f_arr.append(MultiEpsDeltaTradeoff(eps_ls[:i], delta_ls[:i]))
+        f_arr_composed.append(privacy_region_composition_multi_dp(eps_ls[:i], delta_ls[:i], k))
+
+    plot_multiple_functions(
+        f_arr + f_arr_composed,
+        [f"{i}-DP" for i in range(1,1+n)] + [f"{i}-DP {k}-comp." for i in range(1,1+n)],
+        [dotted_custom] * (n - 1)  + ["solid"] + ["dashed"] * (n - 1)  + ["solid"],
+        COLOR_PALETTE[:n][::-1] * 2,
+        save_to=png(title)
+    )
+
+
 if __name__ == "__main__":
-    # heterogeneous_comparison(eps_1=0.6,eps_2=0.4,x=3,y=2,delta_slack_ls=[0.001], title="heterogeneous_comparison")
     # mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
-    # gaussian_tradeoff_approx(mu=1, title="gaussian_approx")
-    # gaussian_compos_approx(k=20, mu=0.05, title="gaussian_compos_approx")
-    # gaussian_compos_approx(k=3, mu=1, title="gaussian_compos_approx_2")
-    # gaussian_compos_approx_two_compos(k1=10, k2=3, mu=1, title="gaussian_2_compos")
-    # gaussian_tradeoff_and_compos_approx(k=3, mu=1, title="gaussian_tradeoff_and_compos_approx")
-    # main_theorem_comparison(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k = 3, title="theorem_1_comparison")
-    # main_theorem_example(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2, k_ls = [2, 3, 10, 20],
-    #                      title="theorem_1_example")
-    # main_theorem_example(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k_ls = [2, 3, 10, 20],
-    #                      title="theorem_1_example_small_region")
-    # main_theorem_comparison_two_ks(eps_1 = 1.2, delta_1 = 0.0, eps_2 = 0.6, delta_2 = 0.2,
-    #                                k1=3, k2=10, title="theorem_1_comparison_two_ks")
-    # main_theorem_comparison_two_ks(eps_1 = 0.3, delta_1 = 0.0, eps_2 = 0.15, delta_2 = 0.02, k1=3, k2=20,
-    #                               title="theorem_1_comparison_two_ks_small_region")
-    # gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=1, title="gaussian_tradeoff_and_2_compos")
-    # gaussian_compos_approx_tradeoff_and_two_compos(k1=3, k2=10, mu=0.05, title="gaussian_tradeoff_and_2_compos_small")
-    # gaussian_tradeoff_and_compos_approx(mu=0.05, k=3, title="gaussian_tradeoff_and_compos_approx_small_single_reg")
-    # smooth_vs_nonsmooth_above_2dp_approx_gaussian(mu=1, title="smooth_vs_nonsmooth_2dp_approx_gaussian_above")
-    # smooth_vs_nonsmooth_below_2dp_approx_gaussian(mu=1., title="smooth_vs_nonsmooth_2dp_approx_gaussian_below")
-    # mixture_test()
-    # doubledp_and_multidp_coincide(eps_1=0.3, delta_1=0.0, eps_2=0.15, delta_2=0.02, k_ls=[5],
-    #                               title="double_and_multi_comparison")
-    # multidp_example_multi_vs_double([0.3, 0.15, 0.04, 0.01], [0.0, 0.02, 0.05, 0.06], 5, "triple_vs_double")
-    # laplace_multidp_comp_approx(1, 3, 4, "laplace_3dp_comp_approx")
-    # laplace_multidp_comp_approx(1, 2, 4, "laplace_2dp_comp_approx")
-    # laplace_n_dp_approx(4)
-    # subsampled_dp_test(eps = 2, delta = 0.1, p = 0.2, title = "subsampled_dp_test")
-    # subsampled_gaussian_test(mu = 1.8, p = 0.35, title = "subsampled_gaussian_test")
-    # subsampled_laplace_approx(3)
-    # subsampled_laplace_comp_approx(3, 9)
-    # subsampled_vmf(0.2, dimensions=3., kappa=2., max_angle=np.cos(np.pi / 4))
-    # subsampled_gaussian_n_dp_comp_test(4, 9, mu=1., p=0.2, title="subsampled_gaussian_n_dp_comp_test")
-    laplace_tradeoff_approx_multip_norms(2)
-    gaussian_tradeoff_approx_multip_norms(3, 6, mu=0.5)
-    subsampled_gaussian_tradeoff_approx_multip_norms(3, 9)
+    # laplace_tradeoff_approx_multip_norms(3, 10, eps=0.7)
+    # gaussian_tradeoff_approx_multip_norms(3, 10, mu=0.5)
+    # subs_gaussian_compos_composition_approx(n=3, k=10, mu=1, p=0.1)
+    # subs_laplace_compos_composition_approx(n=3, k=10, eps=1, p=0.1)
+    # # subs_laplace_vs_gaussian_composition_comparison(n=3, k=15, eps=1.2, mu=1, p=0.1) # SLOW
+    # composition_improves_as_n_increases(5, [1.3, 0.8, 0.25, 0.], [0, 0.1, 0.2, 0.25])
+    # composition_improves_as_n_increases(5, [1.3, 0.8, 0.25, 0.][::-1], [0, 0.1, 0.2, 0.25][::-1],
+    #                                     title="composition_improves_as_n_increases_reversed")
+    main_theorem_comparison_two_ks(eps_1=0.3, delta_1=0.0, eps_2=0.15, delta_2=0.02, k1=3, k2=20,
+                                   title="theorem_1_comparison_two_ks_small_region")
+

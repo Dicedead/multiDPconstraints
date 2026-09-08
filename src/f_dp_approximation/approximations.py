@@ -276,7 +276,7 @@ def linf_multi_dp_approx_below(f: TradeOffFunction, n: int):
     :return: MultiEpsDeltaTradeoff object representing the approximation.
     :rtype: MultiEpsDeltaTradeoff
     """
-    x_star = f.fixed_point()
+    c_fixed = f.fixed_point()
     f_prime_func = f.subgradient
 
     def obj_below(vars):
@@ -290,7 +290,7 @@ def linf_multi_dp_approx_below(f: TradeOffFunction, n: int):
         cons.append(P[0] - TOL)
         for i in range(n - 1):
             cons.append(P[i + 1] - P[i] - TOL)
-        cons.append(x_star - P[-1] - TOL)
+        cons.append(c_fixed - P[-1] - TOL)
 
         subgrads = np.array([f_prime_func(t) for t in P])
         d_offsets = np.array([f(t) - subgrads[i] * t for i, t in enumerate(P)])
@@ -302,7 +302,7 @@ def linf_multi_dp_approx_below(f: TradeOffFunction, n: int):
                 x_i = P[i]
             else:
                 x_i = (d_offsets[i + 1] - d_offsets[i]) / (subgrads[i] - subgrads[i + 1])
-            x_i = np.clip(x_i, 0, x_star)
+            x_i = np.clip(x_i, 0, c_fixed)
             cons.append(max_err - (f(x_i) - (subgrads[i] * x_i + d_offsets[i])))
 
         x_n = d_offsets[-1] / (1 - subgrads[-1]) if abs(subgrads[-1] - 1.0) > SMALL_TOL else 0
@@ -310,7 +310,7 @@ def linf_multi_dp_approx_below(f: TradeOffFunction, n: int):
 
         return np.array(cons)
 
-    P_init = np.linspace(0, x_star, n + 2)[1:-1]
+    P_init = np.linspace(0, c_fixed, n + 2)[1:-1]
     P_init_in = np.append(P_init, 0.1)
 
     res_below = spo.minimize(
