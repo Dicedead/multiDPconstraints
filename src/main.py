@@ -147,10 +147,10 @@ def main_theorem_comparison_two_ks(eps_1, delta_1, eps_2, delta_2, k1, k2, title
             f_dp_single_2
         ],
         [
-            f"Theorems 2-3, $k = {k1}$",
+            f"Ours, $k = {k1}$",
             f"Remark 2, $k = {k1}$",
             f"Remark 1, $k = {k1}$",
-            f"Theorems 2-3, $k = {k2}$",
+            f"Ours, $k = {k2}$",
             f"Remark 2, $k = {k2}$",
             f"Remark 1, $k = {k2}$"
         ],
@@ -1268,12 +1268,12 @@ def composition_improves_as_n_increases(k, eps_ls, delta_ls, title="composition_
 
 
 if __name__ == "__main__":
+    # subs_gaussian_compos_composition_approx(n=3, k=10, mu=1, p=0.1)
+    # subs_laplace_compos_composition_approx(n=3, k=10, eps=1, p=0.1)
+    # subs_laplace_vs_gaussian_composition_comparison(n=3, k=15, eps=1.2, mu=1, p=0.1)
     # mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
     # laplace_tradeoff_approx_multip_norms(3, 10, eps=0.7)
     # gaussian_tradeoff_approx_multip_norms(3, 10, mu=0.5)
-    # subs_gaussian_compos_composition_approx(n=3, k=10, mu=1, p=0.1)
-    # subs_laplace_compos_composition_approx(n=3, k=10, eps=1, p=0.1)
-    # # subs_laplace_vs_gaussian_composition_comparison(n=3, k=15, eps=1.2, mu=1, p=0.1) # SLOW
     # composition_improves_as_n_increases(5, [1.3, 0.8, 0.25, 0.], [0, 0.1, 0.2, 0.25])
     # composition_improves_as_n_increases(5, [1.3, 0.8, 0.25, 0.][::-1], [0, 0.1, 0.2, 0.25][::-1],
     #                                     title="composition_improves_as_n_increases_reversed")
