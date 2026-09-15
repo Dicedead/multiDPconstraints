@@ -1,4 +1,4 @@
-import numpy as np
+from base.imports import *
 
 from base.tradeoff_function import TradeOffFunction
 from base.utils import plot_multiple_functions, COLOR_1, COLOR_2, COLOR_3, COLOR_4, COLOR_5, COLOR_6, COLOR_7, COLOR_8, \
@@ -18,21 +18,6 @@ from multi_dp_mixture.dp_functions import SingleEpsDeltaTradeoff, MultiEpsDeltaT
 
 dotted_custom = (0, (1, 1))
 
-
-def png(title: str, plots_folder: str = "../plots/") -> str:
-    """
-    Preprocess title to save matplotlib figure as png in the correct folder.
-
-    :param title: title of figure
-    :type title: str
-
-    :param plots_folder: folder to save figures in
-    :type plots_folder: str
-
-    :return: prepend folder and append .png
-    :rtype: str
-    """
-    return plots_folder + title + ".png"
 
 
 def mixture_example(alpha_1, eps_1, delta_1, eps_2, delta_2, title):
@@ -55,7 +40,7 @@ def mixture_example(alpha_1, eps_1, delta_1, eps_2, delta_2, title):
                                 "dashed",
                                 "solid"
                             ],
-                            save_to=png(title)
+                            save_to=title
                             )
 
 
@@ -72,7 +57,7 @@ def heterogeneous_comparison(eps_1, eps_2, x, y, delta_slack_ls, title):
     plot_multiple_functions(
         [f_ours, f_approx],
         [f"Theorem 1", f"Prior work"],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -106,7 +91,7 @@ def main_theorem_comparison(eps_1, delta_1, eps_2, delta_2, k, title):
             f"Remark 1, $k = {k}$",
             f"Remark 2, $k = {k}$"
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -147,10 +132,10 @@ def main_theorem_comparison_two_ks(eps_1, delta_1, eps_2, delta_2, k1, k2, title
             f_dp_single_2
         ],
         [
-            f"Ours, $k = {k1}$",
+            r"Theorem \ref{thm:main_gen}, $k = $" + " " + str(k1),
             f"Remark 2, $k = {k1}$",
             f"Remark 1, $k = {k1}$",
-            f"Ours, $k = {k2}$",
+            r"Theorem \ref{thm:main_gen}, $k = $" + " " + str(k1),
             f"Remark 2, $k = {k2}$",
             f"Remark 1, $k = {k2}$"
         ],
@@ -170,7 +155,7 @@ def main_theorem_comparison_two_ks(eps_1, delta_1, eps_2, delta_2, k1, k2, title
             COLOR_2,
             COLOR_2,
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -191,7 +176,7 @@ def main_theorem_example(eps_1, delta_1, eps_2, delta_2, k_ls, title):
     plot_multiple_functions(
         [f_double_dp] + f_comp,
         [f"({eps_1},{delta_1}) and ({eps_2},{delta_2}) DP"] + [f"{k}-composition" for k in k_ls],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -219,7 +204,7 @@ def gaussian_tradeoff_approx(mu, title):
             "dashed",
             "dashed"
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -261,7 +246,7 @@ def gaussian_compos_approx(mu, k, title):
             "dashed",
             "dashed"
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -313,7 +298,7 @@ def gaussian_tradeoff_and_compos_approx(mu, k, title):
             "dashed",
             "dashed"
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -375,7 +360,7 @@ def gaussian_compos_approx_two_compos(mu, k1, k2, title):
             "dashed",
             "dashed"
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -442,7 +427,7 @@ def gaussian_compos_approx_tradeoff_and_two_compos(mu, k1, k2, title):
             "dashed",
         ] * 3,
         [COLOR_1] * 3 + [COLOR_2] * 3 + [COLOR_3] * 3,
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -464,7 +449,7 @@ def laplace_tradeoff_approx(eps, title):
             "Approx below",
             "Approx above",
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -497,7 +482,7 @@ def smooth_vs_nonsmooth_above_2dp_approx_gaussian(mu, title):
             COLOR_2,
             COLOR_3
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -535,7 +520,7 @@ def smooth_vs_nonsmooth_below_2dp_approx_gaussian(mu, title):
             COLOR_3,
             COLOR_4
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -557,7 +542,7 @@ def two_dp_constraints():
                                 "solid",
                                 "solid",
                             ],
-                            save_to=png(title)
+                            save_to=title
                             )
 
 
@@ -589,7 +574,7 @@ def gaussian_n_dp_approx():
         f_arr=f_arr,
         colors=colors,
         linestyles=linestyles,
-        save_to=png(title)
+        save_to=title
     )
 
     plot_multiple_functions(
@@ -597,7 +582,7 @@ def gaussian_n_dp_approx():
         labels=["1-GDP", f"{n}-DP app. below", f"{n}-DP app. above"],
         colors=[COLOR_1, COLOR_3, COLOR_2],
         linestyles=["solid", "dashed", "dashed"],
-        save_to=png(title + "_maxed")
+        save_to= (title + "_maxed")
     )
 
 
@@ -625,19 +610,19 @@ def heterogeneous_plots():
     plot_multiple_functions(
         [f_1, f_2_no_delta, f_no_delta],
         labels=[f"{eps_1}-DP", f"{eps_2}-DP", f"({x},{y})-composition of {eps_1}-DP & {eps_2}-DP"],
-        save_to=png(title + "_no_delta")
+        save_to= (title + "_no_delta")
     )
 
     plot_multiple_functions(
         [f_no_delta],
         labels=[f"({x},{y})-composition of {eps_1}-DP and {eps_2}-DP"],
-        save_to=png(title + "_only_no_delta")
+        save_to= (title + "_only_no_delta")
     )
 
     plot_multiple_functions(
         [f_1, f_2, f_with_delta],
         labels=[f"{(eps_1, delta_1)}-DP (a)", f"{(eps_2, delta_2)}-DP (b)", f"({x},{y})-composition of (a) and (b)"],
-        save_to=png(title + "_with_delta")
+        save_to= (title + "_with_delta")
     )
 
 
@@ -666,7 +651,7 @@ def mixture_test():
                                 "dashed",
                                 "solid"
                             ],
-                            save_to=png(title)
+                            save_to=title
                             )
 
 
@@ -691,7 +676,7 @@ def doubledp_and_multidp_coincide(eps_1, delta_1, eps_2, delta_2, k_ls, title):
         [f"({eps_1},{delta_1}) and ({eps_2},{delta_2}) DP"] + [f"{k}-double" for k in k_ls] + [f"{k}-multi" for k in
                                                                                                k_ls],
         ["solid"] + ["solid"] * len(f_comp) + ["dashed"] * len(f_multi),
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -704,7 +689,7 @@ def multidp_example_multi_vs_double(eps_ls, delta_ls, k, title):
         [f_double, f_triple],
         [f"{k}-double", f"{k}-multi"],
         ["solid", "dashed"],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -734,7 +719,7 @@ def laplace_multidp_comp_approx(eps, n, k, title):
          "dashed",
          "dashed"
          ],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -764,7 +749,7 @@ def laplace_n_dp_approx(n, mu=1):
         f_arr=f_arr,
         colors=colors,
         linestyles=linestyles,
-        save_to=png(title)
+        save_to=title
     )
 
     plot_multiple_functions(
@@ -772,7 +757,7 @@ def laplace_n_dp_approx(n, mu=1):
         labels=[f"Laplace({mu})-DP", f"{n}-DP app. below", f"{n}-DP app. above"],
         colors=[COLOR_1, COLOR_3, COLOR_2],
         linestyles=["solid", "dashed", "dashed"],
-        save_to=png(title + "_maxed")
+        save_to= (title + "_maxed")
     )
 
 
@@ -784,7 +769,7 @@ def subsampled_dp_test(eps=3, delta=0.1, p=0.2, title="subsampled_dp_test"):
         [f, f_subsampled],
         [f"({eps},{delta})-DP", f"({eps},{delta})-DP, subsampled"],
         ["solid", "dashed"],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -796,7 +781,7 @@ def subsampled_gaussian_test(mu=1.8, p=0.35, title="subsampled_gaussian_test"):
         [gaussian, gaussian_subsampled],
         [f"Gaussian({mu})-DP", f"Gaussian({mu})-DP, subsampled"],
         ["solid", "dashed"],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -814,7 +799,7 @@ def subsampled_laplace_approx(n, mu=1, p=0.2, title="laplace_subsampled_n_dp_app
         labels=[f"Lap({mu})", f"{p}-subsampled Lap({mu})", f"{n}-DP app. below", f"{n}-DP app. above"],
         colors=[COLOR_4, COLOR_1, COLOR_3, COLOR_2],
         linestyles=["dotted", "solid", "dashed", "dashed"],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -836,7 +821,7 @@ def subsampled_laplace_comp_approx(n, k, mu=1, p=0.2, title="laplace_subsampled_
                 f"{k}-comp. app. above"],
         colors=[COLOR_1, COLOR_3, COLOR_2, COLOR_3, COLOR_2],
         linestyles=["solid", "dashed", "dashed", "dotted", "dotted"],
-        save_to=png(title)
+        save_to=title
     )
 
 def subsampled_vmf(p, dimensions=3., kappa=2., max_angle=np.cos(np.pi / 4), title="vmf_subsampled"):
@@ -851,7 +836,7 @@ def subsampled_vmf(p, dimensions=3., kappa=2., max_angle=np.cos(np.pi / 4), titl
         labels=[f"VMF", f"{p}-subsampled VMF"],
         colors=[COLOR_1, COLOR_2],
         linestyles=["solid", "solid"],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -869,7 +854,7 @@ def subsampled_vmf_n_dp_approx(n, p, dimensions=3., kappa=2., max_angle=np.cos(n
         labels=[f"VMF", f"{p}-subsampled VMF", f"{n}-DP app. below", f"{n}-DP app. above"],
         colors=[COLOR_4, COLOR_1, COLOR_3, COLOR_2],
         linestyles=["dotted", "solid", "dashed", "dashed"],
-        save_to=png(title)
+        save_to=title
     )
 
 def subsampled_gaussian_n_dp_comp_test(n, k, mu=1., p=0.2, title="subsampled_gaussian_comp_test"):
@@ -888,7 +873,7 @@ def subsampled_gaussian_n_dp_comp_test(n, k, mu=1., p=0.2, title="subsampled_gau
                 f"{k}-comp. app. above"],
         colors=[COLOR_1, COLOR_3, COLOR_2, COLOR_3, COLOR_2],
         linestyles=["solid", "dashed", "dashed", "dotted", "dotted"],
-        save_to=png(title)
+        save_to=title
     )
 
 def laplace_tradeoff_approx_multip_norms(n, k ,eps=1., title="laplace_tradeoff_approx_multip_norms"):
@@ -953,7 +938,7 @@ def laplace_tradeoff_approx_multip_norms(n, k ,eps=1., title="laplace_tradeoff_a
             COLOR_6,
             COLOR_6
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 def gaussian_tradeoff_approx_multip_norms(n, k, mu=1., title="gaussian_tradeoff_approx_multip_norms"):
@@ -1020,7 +1005,7 @@ def gaussian_tradeoff_approx_multip_norms(n, k, mu=1., title="gaussian_tradeoff_
             COLOR_6,
             COLOR_6
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -1088,7 +1073,7 @@ def subsampled_gaussian_tradeoff_approx_multip_norms(n, k, mu=1., p=0.2, title="
             COLOR_5,
             COLOR_5
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -1133,7 +1118,7 @@ def subs_gaussian_compos_composition_approx(n, k, mu=1., p=0.1, title="subs_gaus
             "dashed"
          ],
         [COLOR_1] * 3 + [COLOR_2] * 2,
-        save_to=png(title)
+        save_to=title
     )
 
 def subs_laplace_compos_composition_approx(n, k, eps=1., p=0.1, title="subs_laplace_compos_approx"):
@@ -1177,7 +1162,7 @@ def subs_laplace_compos_composition_approx(n, k, eps=1., p=0.1, title="subs_lapl
             "dashed"
          ],
         [COLOR_1] * 3 + [COLOR_2] * 2,
-        save_to=png(title)
+        save_to=title
     )
 
 
@@ -1244,7 +1229,7 @@ def subs_laplace_vs_gaussian_composition_comparison(n, k, eps=1., mu=1., p=0.1, 
             COLOR_8,
             COLOR_8
         ],
-        save_to=png(title)
+        save_to=title
     )
 
 def composition_improves_as_n_increases(k, eps_ls, delta_ls, title="composition_improves_as_n_increases"):
@@ -1263,20 +1248,17 @@ def composition_improves_as_n_increases(k, eps_ls, delta_ls, title="composition_
         [f"{i}-DP" for i in range(1,1+n)] + [f"{i}-DP {k}-comp." for i in range(1,1+n)],
         [dotted_custom] * (n - 1)  + ["solid"] + ["dashed"] * (n - 1)  + ["solid"],
         COLOR_PALETTE[:n][::-1] * 2,
-        save_to=png(title)
+        save_to=title
     )
 
 
 if __name__ == "__main__":
-    # subs_gaussian_compos_composition_approx(n=3, k=10, mu=1, p=0.1)
-    # subs_laplace_compos_composition_approx(n=3, k=10, eps=1, p=0.1)
-    # subs_laplace_vs_gaussian_composition_comparison(n=3, k=15, eps=1.2, mu=1, p=0.1)
-    # mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
-    # laplace_tradeoff_approx_multip_norms(3, 10, eps=0.7)
-    # gaussian_tradeoff_approx_multip_norms(3, 10, mu=0.5)
-    # composition_improves_as_n_increases(5, [1.3, 0.8, 0.25, 0.], [0, 0.1, 0.2, 0.25])
-    # composition_improves_as_n_increases(5, [1.3, 0.8, 0.25, 0.][::-1], [0, 0.1, 0.2, 0.25][::-1],
-    #                                     title="composition_improves_as_n_increases_reversed")
+    subs_laplace_vs_gaussian_composition_comparison(n=3, k=15, eps=1.2, mu=1, p=0.1)
+    subs_gaussian_compos_composition_approx(n=3, k=10, mu=1, p=0.1)
+    subs_laplace_compos_composition_approx(n=3, k=10, eps=1, p=0.1)
+    mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
+    laplace_tradeoff_approx_multip_norms(3, 10, eps=0.7)
+    gaussian_tradeoff_approx_multip_norms(3, 10, mu=0.5)
     main_theorem_comparison_two_ks(eps_1=0.3, delta_1=0.0, eps_2=0.15, delta_2=0.02, k1=3, k2=20,
                                    title="theorem_1_comparison_two_ks_small_region")
 

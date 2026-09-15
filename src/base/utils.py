@@ -21,8 +21,32 @@ COLORBLIND_FRIENDLY_PALETTE =  \
 
 COLOR_PALETTE = COLORBLIND_FRIENDLY_PALETTE
 
-_DPI = 200.
+_DPI = 200
 _FIGSIZE = (5, 5)
+_PLOTS_FOLDER = "../plots/"
+
+plt.rcParams['text.usetex'] = True
+
+def title_to_asset(title: str, extension: str = ".png", plots_folder: str = _PLOTS_FOLDER) -> str:
+    """
+    Preprocess title to save matplotlib figure as png in the correct folder.
+
+    :param title: title of figure
+    :type title: str
+
+    :param extension: extension of figure
+    :type extension: str
+
+    :param plots_folder: folder to save figures in
+    :type plots_folder: str
+
+    :return: prepend folder and append .png
+    :rtype: str
+    """
+    return plots_folder + title + extension
+
+def _figsize_to_tikz_size(figsize: int):
+    return str((figsize+1)*55)
 
 def plot_multiple_functions(
         f_arr: List[TradeOffFunction],
@@ -84,19 +108,23 @@ def plot_multiple_functions(
     fig = plt.figure(figsize=_FIGSIZE, dpi=_DPI)
     ax = fig.add_subplot()
     for f, label, linestyle, color, order in zip(f_arr, labels, linestyles, colors, orders):
-        plt.plot(x, f(x), label=label, linestyle=linestyle, color=color, zorder=order)
+        plt.plot(x, np.clip(f(x), 0, 1), label=label, linestyle=linestyle, color=color, zorder=order)
 
     plt.plot(x, DIAGONAL(x), "k--")
     ax.set_aspect('equal', adjustable='box')
     ax.set_autoscale_on(False)
-    plt.xlabel("$\\beta_I$")
-    plt.ylabel("$\\beta_{II}}$")
+    plt.xlabel(r"$\beta\textsubscript{I}$")
+    plt.ylabel(r"$\beta\textsubscript{II}$")
 
     if show_legend:
         plt.legend()
 
     if save_to is not None:
-        plt.savefig(save_to, bbox_inches='tight',pad_inches = 0)
+        plt.savefig(title_to_asset(save_to), bbox_inches='tight',pad_inches = 0)
+        m2t.save(title_to_asset(save_to, ".tex", _PLOTS_FOLDER + "tikz/"),
+                 axis_width=_figsize_to_tikz_size(_FIGSIZE[0]),
+                 axis_height=_figsize_to_tikz_size(_FIGSIZE[1]),
+                 )
     else:
         plt.show()
 
