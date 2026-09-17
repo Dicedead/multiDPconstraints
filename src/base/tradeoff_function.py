@@ -1,3 +1,5 @@
+import numpy as np
+
 from base.definitions import *
 from base.real_function import RealFunction
 
@@ -6,6 +8,44 @@ class TradeOffFunction(RealFunction, ABC):
     """
     Represents an abstract tradeoff function.
     """
+
+    def fixed_point(self) -> float:
+        """
+        Finds and returns the fixed point of a function by solving the equation f(x) = x,
+        where f is defined by an implementation of this instance.
+
+        By default, looks for the fixed point using the bisection method implemented with Scipy.
+
+        :return: The fixed point of the function
+        :rtype: float
+        """
+
+        c = spo.root_scalar(
+            f=lambda x: self(x) - x,
+            bracket=(0, 1),
+            x0=1. / 2.
+        ).root
+        return c
+
+    def rotation_change(self, u: float) -> Callable[[Array], Array]:
+        """
+        45 deg rotation change of variable.
+
+        :param u: Rotated evaluation point.
+        :type u: float
+        :return: Function to find the root of to obtain the rotated evaluation point.
+        :rtype: Callable[[Array], Array]
+        """
+        return lambda x: (x - self(x)) / np.sqrt(2) - u
+
+    def normal_rotation(self) -> 'NormalRotation':
+        return NormalRotation(self)
+
+    def subgradient(self, x: float) -> float:
+        dx = DX_DIFF
+        if dx < x < 1 - dx:
+            return (self(x + dx) - self(x - dx)) / (2 * dx)
+        return (self(x + dx) - self(x)) / dx if x < 1 else (self(x) - self(x - dx)) / dx
 
     @abstractmethod
     def __call__(self, x: Array) -> Array:
@@ -41,7 +81,6 @@ class TradeOffFunction(RealFunction, ABC):
 
     @staticmethod
     def intersection(f_arr: List['TradeOffFunction']) -> 'TradeOffFunction':
-
         class IntersectedTradeoffFunction(TradeOffFunction):
 
             def convex_conjugate(self) -> 'RealFunction':
@@ -51,4 +90,197 @@ class TradeOffFunction(RealFunction, ABC):
             def __call__(self, x: Array) -> Array:
                 return np.max(np.array([f(x) for f in f_arr]), axis=0)
 
+            def fixed_point(self) -> float:
+                candidates = np.array([f.fixed_point() for f in f_arr])
+                values = np.abs(self(candidates) - candidates)
+                return candidates[np.argmin(values)]
+
+            def subgradient(self, x: float) -> float:
+                return f_arr[np.argmax(np.array([f(x) for f in f_arr]))].subgradient(x)
+
         return IntersectedTradeoffFunction()
+
+    def subsampled(self, p: float) -> 'TradeOffFunction':
+        """
+        Return a subsampled version of the current function. Sample this trade-off function
+        with probability p, else sample the identity trade-off function f(x) = 1-x.
+
+        :param p: probability of sampling the current trade-off.
+        :type p: float
+
+        :return: Subsampled version of the current trade-off function.
+        """
+        return _InnerSubsampledTradeoffFunction(self, p)
+
+
+class _InnerSubsampledTradeoffFunction(TradeOffFunction):
+
+    def convex_conjugate(self) -> 'RealFunction':
+        raise "Convex conjugate not defined."
+
+    def __init__(self, f: TradeOffFunction, p: float):
+        self._f = f
+        self._p = p
+        self._x_star = f.fixed_point()
+        self._f_p_x_star = self._f_p(self._x_star)
+
+    def _f_p(self, x):
+        x = np.array(x)
+        return self._p * self._f(x) + (1 - self._p) * (1 - x)
+
+    def _f_p_inv(self, x):
+        out = np.zeros_like(x)
+        for i in range(len(x)):
+            out[i] = spo.root_scalar(
+                f=lambda arr: self._f_p(arr) - x[i],
+                fprime=lambda arr: self._p * self._f.subgradient(arr) - (1 - self._p),
+                x0=self._f_p_x_star,
+                bracket=(0, 1)
+            ).root
+        return out
+        # ugly but works, code below does not
+
+        # return spo.root(
+        #     fun=lambda arr: self._f_p(arr) - x,
+        #     x0=0.5 * np.ones_like(x),
+        # ).x
+
+    def __call__(self, x: Array) -> Array:
+        x = np.array(x)
+        # assert np.all(x <= 1)
+        # assert np.all(x >= 0)
+
+        outs = np.zeros_like(x)
+        outs[x < self._x_star] = self._f_p(x[x < self._x_star])
+        outs[x >= self._x_star] = self._x_star + self._f_p_x_star - x[x >= self._x_star]
+        outs[x > self._f_p_x_star] = self._f_p_inv(x[x > self._f_p_x_star])
+        return outs
+
+    def subgradient(self, x: float) -> float:
+        assert 0 <= x <= 1
+
+        if x < self._x_star:
+            return self._p * self._f.subgradient(x) - (1 - self._p)
+        elif x < self._f_p_x_star:
+            return -1
+        else:
+            return 1 / (self._p * self._f.subgradient(self._f_p_inv(x)) - (1 - self._p))
+
+
+class NormalRotation:
+    """
+    45 degree rotation of a trade-off function.
+    """
+
+    def __init__(self, f: TradeOffFunction):
+        self._f = f
+        self._z = -f(0.) / np.sqrt(2)
+
+    def get_z(self):
+        """
+        Left bound of the rotation interval.
+        :return: float
+        """
+        return self._z
+
+    def invert_u(self, u: float) -> float:
+        """
+        Invert the input value `u` to find the corresponding root of the equation
+        defined by the function rotation change and its derivatives.
+
+        :param u: Input value to be inverted.
+        :type u: float
+        :return: The root found for the corresponding input value `u`.
+        :rtype: float
+        """
+        return spo.root_scalar(
+            f=self._f.rotation_change(u),
+            x0=self._f.fixed_point() / 2
+        ).root
+
+    def call(self, u: Array, x_u: Array = None) -> Array:
+        """
+        Evaluate the rotated function at `u` using the precomputed `x_u` values, or compute them if not provided.
+
+        :param u: Input array or a single value used for computation.
+        :param x_u: Optional precomputed array or single value to bypass
+            the default computation of `x_u`, root of u.
+        :return: Rotated function value at u
+        """
+        if x_u is None:
+            x_u = [self.invert_u(ui) for ui in u] if type(u) is Array else self.invert_u(u)
+        return (x_u + self._f(x_u)) / np.sqrt(2)
+
+    def subgradient(self, u: float) -> Array:
+        return NormalRotation.slope_forward_rotation(self._f.subgradient(self.invert_u(u)))
+
+    def __call__(self, u: Array) -> Array:
+        return self.call(u)
+
+    @staticmethod
+    def slope_forward_rotation(a: Array) -> Array:
+        """
+        Rotate the slope of a line in the original (y=0, x=0) coordinate system
+        to the new (y=-x,y=x) coordinate system.
+
+        :param a: slope in original coordinate system
+        :type a: Array
+        :return: rotated slope
+        :rtype: Array
+        """
+        a = np.array(a)
+        return (1 + a) / (1 - a)
+
+    @staticmethod
+    def slope_offset_forward_rotation(a: Array, b: Array) -> Tuple[Array, Array]:
+        """
+         Rotate the slope and offset of a line in the original (y=0, x=0) coordinate system
+         to the new (y=-x,y=x) coordinate system.
+
+         :param a: slope in original coordinate system
+         :type a: Array
+         :param b: offset in original coordinate system
+         :type b: Array
+         :return: rotated slope and offset
+         :rtype: Tuple[Array,Array]
+         """
+        a = np.array(a)
+        b = np.array(b)
+        assert np.shape(a) == np.shape(b)
+        alpha = NormalRotation.slope_forward_rotation(a)
+        beta = b * (alpha - 1) / (a * np.sqrt(2))
+        return alpha, beta
+
+    @staticmethod
+    def slope_inversion(alpha: Array) -> Array:
+        """
+        Rotate the slope of a line in the rotated (y=-x,y=x) coordinate system
+        to the original (y=0, x=0) coordinate system.
+
+        :param alpha: slope in rotated coordinate system
+        :type alpha: Array
+        :return: slope in original coordinate system
+        :rtype: Array
+        """
+        alpha = np.array(alpha)
+        return (alpha - 1) / (alpha + 1)
+
+    @staticmethod
+    def slope_offset_rotation_inversion(alpha: Array, beta: Array) -> Tuple[Array, Array]:
+        """
+        Rotate the slope and offset of a line in the rotated (y=-x,y=x) coordinate system
+        to the original (y=0, x=0) coordinate system.
+
+        :param alpha: slope in rotated coordinate system
+        :type alpha: Array
+        :param beta: offset in rotated coordinate system
+        :type beta: Array
+        :return: slope and offset in original coordinate system
+        :rtype: Tuple[Array, Array]
+        """
+        alpha = np.array(alpha)
+        beta = np.array(beta)
+        assert np.shape(alpha) == np.shape(beta)
+        a = NormalRotation.slope_inversion(alpha)
+        b = np.sqrt(2) * beta / (alpha + 1)
+        return a, b

@@ -1,3 +1,5 @@
+from breezy.trace import show_error
+
 from base.definitions import *
 from base.tradeoff_function import TradeOffFunction
 from multi_dp_mixture.piecewise_affine import DIAGONAL
@@ -5,23 +7,58 @@ from multi_dp_mixture.piecewise_affine import DIAGONAL
 COLOR_1 = '#377eb8'
 COLOR_2 = '#ff7f00'
 COLOR_3 = '#4daf4a'
+COLOR_4 = '#f781bf'
+COLOR_5 = '#a65628'
+COLOR_6 = '#984ea3'
+COLOR_7 = '#999999'
+COLOR_8 = '#e41a1c'
+COLOR_9 = '#dede00'
 
 COLORBLIND_FRIENDLY_PALETTE =  \
         [COLOR_1, COLOR_2, COLOR_3,
-         '#f781bf', '#a65628', '#984ea3',
-         '#999999', '#e41a1c', '#dede00']
+         COLOR_4, COLOR_5, COLOR_6,
+         COLOR_7, COLOR_8, COLOR_9]
 
+COLOR_PALETTE = COLORBLIND_FRIENDLY_PALETTE
+
+_DPI = 200
+_FIGSIZE = (5, 5)
+_PLOTS_FOLDER = "../plots/"
+
+plt.rcParams['text.usetex'] = True
+
+def title_to_asset(title: str, extension: str = ".png", plots_folder: str = _PLOTS_FOLDER) -> str:
+    """
+    Preprocess title to save matplotlib figure as png in the correct folder.
+
+    :param title: title of figure
+    :type title: str
+
+    :param extension: extension of figure
+    :type extension: str
+
+    :param plots_folder: folder to save figures in
+    :type plots_folder: str
+
+    :return: prepend folder and append .png
+    :rtype: str
+    """
+    return plots_folder + title + extension
+
+def _figsize_to_tikz_size(figsize: int):
+    return str((figsize+1)*55)
 
 def plot_multiple_functions(
         f_arr: List[TradeOffFunction],
-        labels: List[str],
+        labels: List[str] = None,
         linestyles: List[str] = None,
         colors: List[str] = None,
         orders: List[int] = None,
         start=0,
         end=1,
         num_points=100,
-        save_to: str = None
+        save_to: str = None,
+        show_legend=True
 ):
     """
     Plots multiple functions on the same graph, providing a visual comparison
@@ -31,7 +68,8 @@ def plot_multiple_functions(
                   a function to be plotted.
     :type f_arr: List[PiecewiseAffine]
     :param labels: A list of labels corresponding to each function in f_arr,
-                   which will be used for the plot's legend.
+                   which will be used for the plot's legend. If not provided,
+                   no legend shown.
     :type labels: List[str]
     :param linestyles: A list of linestyles to be used for each function in f_arr.
     :type linestyles: List[str], optional. Defaults to solid style for all functions.
@@ -50,34 +88,43 @@ def plot_multiple_functions(
     :type save_to: str, optional
     :return: None
     """
-    assert len(f_arr) == len(labels)
+    show_legend = labels is not None
+    assert not show_legend or len(f_arr) == len(labels)
+
+    if not show_legend:
+        labels = [""] * len(f_arr)
 
     if linestyles is None:
         linestyles = ["solid"] * len(f_arr)
 
     if colors is None:
-        colors = COLORBLIND_FRIENDLY_PALETTE[:len(f_arr)]
+        colors = COLOR_PALETTE[:len(f_arr)]
 
     if orders is None:
         orders = range(len(f_arr))
 
 
     x = np.linspace(start, end, num_points)
-    fig = plt.figure()
+    fig = plt.figure(figsize=_FIGSIZE, dpi=_DPI)
     ax = fig.add_subplot()
     for f, label, linestyle, color, order in zip(f_arr, labels, linestyles, colors, orders):
-        plt.plot(x, f(x), label=label, linestyle=linestyle, color=color, zorder=order)
+        plt.plot(x, np.clip(f(x), 0, 1), label=label, linestyle=linestyle, color=color, zorder=order)
 
     plt.plot(x, DIAGONAL(x), "k--")
-    plt.legend()
     ax.set_aspect('equal', adjustable='box')
     ax.set_autoscale_on(False)
-    plt.xlabel("$\\beta_I$")
-    plt.ylabel("$\\beta_{II}}$")
-    #plt.tight_layout()
+    plt.xlabel(r"$\beta\textsubscript{I}$")
+    plt.ylabel(r"$\beta\textsubscript{II}$")
+
+    if show_legend:
+        plt.legend()
 
     if save_to is not None:
-        plt.savefig(save_to, bbox_inches='tight',pad_inches = 0)
+        plt.savefig(title_to_asset(save_to), bbox_inches='tight',pad_inches = 0)
+        m2t.save(title_to_asset(save_to, ".tex", _PLOTS_FOLDER + "tikz/"),
+                 axis_width=_figsize_to_tikz_size(_FIGSIZE[0]),
+                 axis_height=_figsize_to_tikz_size(_FIGSIZE[1]),
+                 )
     else:
         plt.show()
 

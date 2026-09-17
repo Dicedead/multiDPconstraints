@@ -2,6 +2,47 @@ from base.definitions import *
 from base.real_function import RealFunction
 
 
+def keep_useful_lines(slopes: Array, intercepts: Array) -> Tuple[Array, Array]:
+    """
+    Filters and returns useful lines based on their slopes and intercepts,
+    removing redundant ones that do not contribute to the convex hull.
+    Assumes max-of-affines representation.
+
+    :param slopes: 1D array containing the slopes of the lines.
+    :type slopes: Array
+    :param intercepts: 1D array containing the intercepts of the lines.
+    :type intercepts: Array
+    :return: Tuple of useful slopes, then useful intercepts.
+    :rtype: Tuple[Array, Array]
+    """
+    pairs = set(zip(slopes, intercepts))
+    points = sorted(list(pairs))
+    num_points = len(points)
+
+    if num_points == 0:
+        return np.array([]), np.array([])
+    if num_points == 1:
+        return np.r_[points[0][0]], np.r_[points[0][1]]
+
+    hull_useful_pairs = []
+    for candidate_slope, candidate_intercept in points:
+        while len(hull_useful_pairs) >= 2:
+            older_slope, older_intercept = hull_useful_pairs[-2]
+            previous_slope, previous_intercept = hull_useful_pairs[-1]
+
+            if ((previous_intercept - older_intercept) * (candidate_slope - previous_slope)
+                    <= (candidate_intercept - previous_intercept) * (previous_slope - older_slope)):
+                hull_useful_pairs.pop()
+            else:
+                break
+
+        hull_useful_pairs.append((candidate_slope, candidate_intercept))
+
+    useful_slopes = np.array([p[0] for p in hull_useful_pairs])
+    useful_intercepts = np.array([p[1] for p in hull_useful_pairs])
+
+    return useful_slopes, useful_intercepts
+
 class PiecewiseAffine(RealFunction):
     """
     Represents a piecewise affine function.
@@ -18,11 +59,7 @@ class PiecewiseAffine(RealFunction):
             domain_end: float = DEFAULT_DOMAIN_END,
             bounded: bool = False
     ):
-        pairs = list(zip(slopes, intercepts))
-        useful_pairs = PiecewiseAffine.__keep_useful_lines(pairs)
-
-        self._slopes = np.array([p[0] for p in useful_pairs])
-        self._intercepts = np.array([p[1] for p in useful_pairs])
+        self._slopes, self._intercepts = keep_useful_lines(slopes, intercepts)
         self._slopes.flags.writeable = False
         self._intercepts.flags.writeable = False
 
@@ -33,14 +70,14 @@ class PiecewiseAffine(RealFunction):
         self._domain_end = domain_end
         self._bounded_domain = bounded
 
-    def __call__(self, x: np.ndarray) -> np.ndarray:
+    def __call__(self, x: Array) -> Array:
         """
         Evaluates the maximum value across a computed set of linear equations for each input element.
 
         :param x: Input array, evaluation point of the piecewise affine function.
-        :type x: np.ndarray, last dimension of the same length as lists of slopes and intercepts.
+        :type x: Array, last dimension of the same length as lists of slopes and intercepts.
         :return: The maximum computed value along the last axis of the transformed array.
-        :rtype: np.ndarray
+        :rtype: Array
         """
         x = x.reshape(-1, 1)
         max_input = self._inner_slopes * x + self._inner_intercepts
@@ -86,6 +123,24 @@ class PiecewiseAffine(RealFunction):
             domain_end=domain_end,
             bounded=not self._bounded_domain
             )
+
+    def subgradient(self, x: float, tol=1e-9) -> float:
+        """
+        Compute the subgradient of the function at x.
+
+        :param x: point to compute the subgradient at
+        :type x: float
+        :param tol: tolerance for the equality check
+        :type tol: float
+        :return: float
+        """
+        y_values = [a * x + b for a, b in zip(self._slopes, self._intercepts)]
+        f_x = max(y_values)
+        active_slopes = [
+            a for a, y in zip(self._slopes, y_values)
+            if abs(y - f_x) <= tol
+        ]
+        return min(active_slopes)
 
     def __add__(self, other: 'PiecewiseAffine') -> 'PiecewiseAffine':
         """
@@ -174,33 +229,6 @@ class PiecewiseAffine(RealFunction):
             ax.set_autoscale_on(False)
 
         plt.show()
-
-    @staticmethod
-    def __keep_useful_lines(pairs):
-        """
-        Compute the upper convex hull of (slope, intercept) pairs.
-        Assumes max-of-affines representation.
-        """
-
-        points = sorted(set(pairs))
-        if len(points) <= 1:
-            return points
-
-        hull = []
-        for candidate_slope, candidate_intercept in points:
-            while len(hull) >= 2:
-                older_slope, older_intercept = hull[-2]
-                previous_slope, previous_intercept = hull[-1]
-
-                if ((previous_intercept - older_intercept) * (candidate_slope - previous_slope)
-                        <= (candidate_intercept - previous_intercept) * (previous_slope - older_slope)):
-                    hull.pop()
-                else:
-                    break
-
-            hull.append((candidate_slope, candidate_intercept))
-
-        return hull
 
     def get_slopes(self) -> Array:
         """

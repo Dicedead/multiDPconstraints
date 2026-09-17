@@ -2,8 +2,9 @@ import numpy as np
 
 from base.utils import plot_multiple_functions
 from main_theorems.combinatorial_version import privacy_region_composition_double_dp_combinatorial
+from main_theorems.heterogeneous_composition_paper import heter_comp_generalized
 from main_theorems.heterogeneous_version import privacy_region_composition_double_dp_heterogeneous_comp, \
-    privacy_region_composition_heterogeneous
+    privacy_region_composition_heterogeneous_two_constraints
 from main_theorems.other_composition_theorems import privacy_region_composition_exact
 from multi_dp_mixture.dp_functions import MultiEpsDeltaTradeoff, SingleEpsDeltaTradeoff
 
@@ -69,7 +70,7 @@ def privacy_region_heter_sanity_check():
     x = 3
     y = 0
 
-    f_comp = privacy_region_composition_heterogeneous(eps_1, eps_2, x, y)
+    f_comp = privacy_region_composition_heterogeneous_two_constraints(eps_1, eps_2, x, y)
     f_original = privacy_region_composition_exact(eps_1, 0, x)
 
     plot_multiple_functions([f_comp, f_original],["Heterogeneous new", "Original"])
@@ -77,8 +78,27 @@ def privacy_region_heter_sanity_check():
     x = np.linspace(0, 1, 100)
     assert np.allclose(f_original(x), f_comp(x))
 
+def general_hetercomp_matches_twodp():
+    eps_1 = 1.3
+    eps_2 = 0.5
+    x = 3
+    y = 2
+    eps = [eps_1] * x + [eps_2] * y
+    dls = [0] * len(eps)
+
+    _, new_imp = heter_comp_generalized(eps, dls, return_eps_deltas=True)
+
+    _, current_imp = privacy_region_composition_heterogeneous_two_constraints(eps_1, eps_2, x, y, True)
+    current_imp.sort(key=lambda x: x[0])
+    new_imp.sort(key=lambda x: x[0])
+
+    new_imp = np.mat(new_imp)
+    current_imp = np.mat(current_imp)
+    assert np.allclose(new_imp, current_imp)
+
 multi_dp_visual_test()
 add_visual_test()
 two_theorems_match()
 double_convex_conj_is_identity_test()
 privacy_region_heter_sanity_check()
+general_hetercomp_matches_twodp()
