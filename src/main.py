@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 from base.imports import *
@@ -1379,20 +1380,58 @@ def composition_improves_as_n_increases(k, eps_ls, delta_ls, title="composition_
         save_to=title
     )
 
-def approx_gaussian_improves_as_n_increases(mu, k, n_ls, title):
+def approx_gaussian_improves_as_n_increases(mu, k, n_max, title):
 
     g_mu = GaussianTradeoff(mu)
     g_mu_k_comp = GaussianTradeoff(mu * np.sqrt(k))
 
+    n_ls = range(1,n_max+1)
+
     linf_below_apps = [
         linf_multi_dp_approx_below(g_mu, n) for n in n_ls
+    ]
+    linf_below_comps = [
+        privacy_region_composition_multi_dp(
+            app.get_eps_list(),
+            app.get_delta_list(),
+            k
+        ) for app in linf_below_apps
     ]
 
     linf_above_apps = [
         linf_multi_dp_approx_above(g_mu, n) for n in n_ls
     ]
+    linf_above_comps = [
+        privacy_region_composition_multi_dp(
+            app.get_eps_list(),
+            app.get_delta_list(),
+            k
+        ) for app in linf_above_apps
+    ]
 
+    errors_approx_below = np.array([
+        linf_distance(g_mu, app) for app in linf_below_apps
+    ])
 
+    errors_comps_below = np.array([
+        linf_distance(g_mu_k_comp, comp) for comp in linf_below_comps
+    ])
+
+    errors_approx_above = np.array([
+        linf_distance(g_mu, app) for app in linf_above_apps
+    ])
+
+    errors_comps_above = np.array([
+        linf_distance(g_mu_k_comp, comp) for comp in linf_above_comps
+    ])
+
+    # TODO add labels, adapt colors, linestyles, ensure single ticks
+    plt.plot(n_ls, errors_approx_above)
+    plt.plot(n_ls, errors_approx_below)
+    plt.plot(n_ls, errors_comps_above)
+    plt.plot(n_ls, errors_comps_below)
+    plt.legend(["$L_\\infty$ approx. above", "$L_\\infty$ approx. below", "$L_\\infty$ comp. above", "$L_\\infty$ comp. below"])
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -1403,5 +1442,6 @@ if __name__ == "__main__":
     # laplace_tradeoff_approx_multip_norms(3, 10, eps=0.7)
     # gaussian_tradeoff_approx_multip_norms(3, 10, mu=0.5)
     # main_theorem_comparison_two_ks(eps_1=0.3, delta_1=0.0, eps_2=0.15, delta_2=0.02, k1=3, k2=20, title="theorem_1_comparison_two_ks_small_region")
-    gaussian_compos_approx_tradeoff_and_multi_compos(mu=1., n=4, k_ls=[3, 10], title="gaussian_compos_approx_multi_k")
-    laplace_compos_approx_tradeoff_and_multi_compos(eps=1., n=4, k_ls=[3, 10], title="laplace_compos_approx_multi_k")
+    # gaussian_compos_approx_tradeoff_and_multi_compos(mu=1., n=4, k_ls=[3, 10], title="gaussian_compos_approx_multi_k")
+    # laplace_compos_approx_tradeoff_and_multi_compos(eps=1., n=4, k_ls=[3, 10], title="laplace_compos_approx_multi_k")
+    approx_gaussian_improves_as_n_increases(1, 3, 7, "Error as n increases")
