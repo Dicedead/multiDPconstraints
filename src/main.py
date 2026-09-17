@@ -1,8 +1,11 @@
+import numpy as np
+
 from base.imports import *
+from itertools import chain
 
 from base.tradeoff_function import TradeOffFunction
 from base.utils import plot_multiple_functions, COLOR_1, COLOR_2, COLOR_3, COLOR_4, COLOR_5, COLOR_6, COLOR_7, COLOR_8, \
-    COLOR_9, COLOR_PALETTE
+    COLOR_9, COLOR_PALETTE, linf_distance
 from f_dp_approximation.approximations import l1_multi_dp_approx_above, l1_multi_dp_approx_below, \
     linf_multi_dp_approx_below, linf_multi_dp_approx_above
 from f_dp_approximation.smooth_approximation.gaussian_tradeoff import GaussianTradeoff
@@ -430,6 +433,131 @@ def gaussian_compos_approx_tradeoff_and_two_compos(mu, k1, k2, title):
         save_to=title
     )
 
+def gaussian_compos_approx_tradeoff_and_multi_compos(mu, n, k_ls, title):
+    """
+    Plot the n-DP lower and upper approximations of the gaussian trade-off composition for multiple values of k
+    along with the approximation of the gaussian trade-off itself.
+    """
+
+    g_mu = GaussianTradeoff(mu)
+    g_mu_composed_ls = [GaussianTradeoff(np.sqrt(k) * mu) for k in k_ls]
+
+    g_mu_approx_below = linf_multi_dp_approx_below(g_mu, n)
+    g_mu_approx_above = linf_multi_dp_approx_above(g_mu, n)
+
+    g_mu_composed_below_ls = []
+    g_mu_composed_above_ls = []
+
+    eps_below_ls = g_mu_approx_below.get_eps_list()
+    delta_below_ls = g_mu_approx_below.get_delta_list()
+
+    eps_above_ls = g_mu_approx_above.get_eps_list()
+    delta_above_ls = g_mu_approx_above.get_delta_list()
+
+    for k in k_ls:
+        g_mu_composed_below_k = privacy_region_composition_multi_dp(eps_below_ls, delta_below_ls, k)
+        g_mu_composed_above_k = privacy_region_composition_multi_dp(eps_above_ls, delta_above_ls, k)
+        g_mu_composed_below_ls.append(g_mu_composed_below_k)
+        g_mu_composed_above_ls.append(g_mu_composed_above_k)
+
+    interleaved_tradeoffs = list(chain.from_iterable(zip(
+        g_mu_composed_ls,
+        g_mu_composed_above_ls,
+        g_mu_composed_below_ls
+    )))
+
+    label_triplet = lambda k: [
+        f"{k}-composition of {float(mu):.2}-GDP",
+        f"{k}-comp. upper approx",
+        f"{k}-comp. lower approx",
+    ]
+    interleaved_labels = [label_triplet(k) for k in k_ls]
+    interleaved_labels = list(chain.from_iterable(interleaved_labels))
+
+    repeats = len(k_ls) + 1
+    colors = COLOR_PALETTE[:repeats]
+    colors = [color for color in colors for _ in range(3)]
+
+    plot_multiple_functions(
+        [
+            g_mu,
+            g_mu_approx_above,
+            g_mu_approx_below,
+        ] + interleaved_tradeoffs,
+        [
+            f"{float(mu):.2}-GDP",
+            f"{n}-DP upper approx",
+            f"{n}-DP lower approx",
+        ] + interleaved_labels,
+        [
+            "solid",
+            dotted_custom,
+            "dashed",
+        ] * repeats,
+        colors,
+        save_to=title
+    )
+
+def laplace_compos_approx_tradeoff_and_multi_compos(eps, n, k_ls, title):
+    """
+    Plot the n-DP lower and upper approximations of the Laplace trade-off composition for multiple values of k
+    along with the approximation of the Laplace trade-off itself.
+    """
+
+    lap = LaplaceTradeoff(eps)
+
+    lap_approx_below = linf_multi_dp_approx_below(lap, n)
+    lap_approv_above = linf_multi_dp_approx_above(lap, n)
+
+    lap_composed_below_ls = []
+    lap_composed_above_ls = []
+
+    eps_below_ls = lap_approx_below.get_eps_list()
+    delta_below_ls = lap_approx_below.get_delta_list()
+
+    eps_above_ls = lap_approv_above.get_eps_list()
+    delta_above_ls = lap_approv_above.get_delta_list()
+
+    for k in k_ls:
+        lap_composed_below_k = privacy_region_composition_multi_dp(eps_below_ls, delta_below_ls, k)
+        lap_composed_above_k = privacy_region_composition_multi_dp(eps_above_ls, delta_above_ls, k)
+        lap_composed_below_ls.append(lap_composed_below_k)
+        lap_composed_above_ls.append(lap_composed_above_k)
+
+    interleaved_tradeoffs = list(chain.from_iterable(zip(
+        lap_composed_above_ls,
+        lap_composed_below_ls
+    )))
+
+    label_triplet = lambda k: [
+        f"{k}-comp. upper approx",
+        f"{k}-comp. lower approx",
+    ]
+    interleaved_labels = [label_triplet(k) for k in k_ls]
+    interleaved_labels = list(chain.from_iterable(interleaved_labels))
+
+    colors = [COLOR_1] * 3
+    colors.extend([color for color in COLOR_PALETTE[1:len(k_ls) + 1] for _ in range(2)])
+
+    plot_multiple_functions(
+        [
+            lap,
+            lap_approv_above,
+            lap_approx_below,
+        ] + interleaved_tradeoffs,
+        [
+            f"Lap({float(eps):.2})-DP",
+            f"{n}-DP upper approx",
+            f"{n}-DP lower approx",
+        ] + interleaved_labels,
+        [
+            "solid",
+            dotted_custom,
+            "dashed",
+        ] + ([dotted_custom, "dashed"] * len(k_ls)),
+        colors,
+        save_to=title
+    )
 
 def laplace_tradeoff_approx(eps, title):
     """
@@ -1251,6 +1379,21 @@ def composition_improves_as_n_increases(k, eps_ls, delta_ls, title="composition_
         save_to=title
     )
 
+def approx_gaussian_improves_as_n_increases(mu, k, n_ls, title):
+
+    g_mu = GaussianTradeoff(mu)
+    g_mu_k_comp = GaussianTradeoff(mu * np.sqrt(k))
+
+    linf_below_apps = [
+        linf_multi_dp_approx_below(g_mu, n) for n in n_ls
+    ]
+
+    linf_above_apps = [
+        linf_multi_dp_approx_above(g_mu, n) for n in n_ls
+    ]
+
+
+
 
 if __name__ == "__main__":
     # subs_laplace_vs_gaussian_composition_comparison(n=3, k=15, eps=1.2, mu=1, p=0.1)
@@ -1259,6 +1402,6 @@ if __name__ == "__main__":
     # mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
     # laplace_tradeoff_approx_multip_norms(3, 10, eps=0.7)
     # gaussian_tradeoff_approx_multip_norms(3, 10, mu=0.5)
-    main_theorem_comparison_two_ks(eps_1=0.3, delta_1=0.0, eps_2=0.15, delta_2=0.02, k1=3, k2=20,
-                                   title="theorem_1_comparison_two_ks_small_region")
-
+    # main_theorem_comparison_two_ks(eps_1=0.3, delta_1=0.0, eps_2=0.15, delta_2=0.02, k1=3, k2=20, title="theorem_1_comparison_two_ks_small_region")
+    gaussian_compos_approx_tradeoff_and_multi_compos(mu=1., n=4, k_ls=[3, 10], title="gaussian_compos_approx_multi_k")
+    laplace_compos_approx_tradeoff_and_multi_compos(eps=1., n=4, k_ls=[3, 10], title="laplace_compos_approx_multi_k")

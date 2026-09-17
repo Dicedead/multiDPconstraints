@@ -1,8 +1,9 @@
-from breezy.trace import show_error
-
 from base.definitions import *
+from base.real_function import RealFunction
 from base.tradeoff_function import TradeOffFunction
 from multi_dp_mixture.piecewise_affine import DIAGONAL
+from scipy.optimize import differential_evolution
+from scipy.integrate import trapezoid
 
 COLOR_1 = '#377eb8'
 COLOR_2 = '#ff7f00'
@@ -132,3 +133,45 @@ def plot_multiple_functions(
 
 def plot_one_function(f: TradeOffFunction, label: str, start=0, end=1, num_points=100):
     plot_multiple_functions([f], [label], start, end, num_points)
+
+
+def linf_distance(f: RealFunction, g: RealFunction, tol=1e-7) -> float:
+    """
+    Computes the Linf norm of f - g on [0, 1] using Differential Evolution.
+
+    :param f: The first function.
+    :type f: RealFunction
+
+    :param g: The second function.
+    :type g: RealFunction
+
+    :param tol: The tolerance for the optimization algorithm.
+    :type tol: float
+
+    :return: The maximum absolute difference between f and g on [0, 1].
+    """
+    def objective(x):
+        return -abs(f(x[0]) - g(x[0]))
+    bounds = [(0.0, 1.0)]
+    result = differential_evolution(objective, bounds, tol=tol)
+    return -result.fun
+
+
+def l1_distance(f: RealFunction, g: RealFunction, grid_points=1e5) -> float:
+    """
+    Calculate the L1 distance between two real-valued functions by with the trapezoid rule.
+
+    :param f: The first function.
+    :type f: RealFunction
+
+    :param g: The second function.
+    :type g: RealFunction
+
+    :param grid_points: The number of points in the grid used to approximate
+        the integral. Defaults to 100,000.
+
+    :return: The L1 distance as a float.
+    """
+    x_grid = np.linspace(0.0, 1.0, int(grid_points))
+    y_diff = np.abs(f(x_grid) - g(x_grid))
+    return trapezoid(y_diff, x_grid)
