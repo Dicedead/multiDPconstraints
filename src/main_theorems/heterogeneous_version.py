@@ -175,6 +175,9 @@ def privacy_region_composition_multi_dp(eps_ls: List[float], delta_ls: List[floa
     """
     assert len(eps_ls) == len(delta_ls)
 
+    if len(eps_ls) == 2:
+        return privacy_region_composition_double_dp_heterogeneous_comp(eps_ls[0], delta_ls[0], eps_ls[1], delta_ls[1], k)
+
     # Keep only the active constraints and sort them by decreasing epsilon and increasing delta
     slopes, intercepts = get_all_slopes_intercepts_from_eps_delta_ls(
         np.array(eps_ls), np.array(delta_ls), with_inverses=False

@@ -1,0 +1,112 @@
+% This file was created with matplot2tikz v0.5.4.
+\begin{tikzpicture}
+
+\definecolor{darkgray176}{RGB}{176,176,176}
+\definecolor{darkorange2551270}{RGB}{255,127,0}
+\definecolor{hotpink247129191}{RGB}{247,129,191}
+\definecolor{lightgray204}{RGB}{204,204,204}
+\definecolor{mediumseagreen7717574}{RGB}{77,175,74}
+\definecolor{sienna1668640}{RGB}{166,86,40}
+\definecolor{steelblue55126184}{RGB}{55,126,184}
+
+\begin{axis}[
+legend cell align={left},
+legend style={fill opacity=0.8, draw opacity=1, text opacity=1, draw=lightgray204},
+tick align=outside,
+tick pos=left,
+x grid style={darkgray176},
+xlabel={Number of DP constraints},
+xmin=0.65, xmax=8.35,
+xtick style={color=black},
+xtick={0,1,2,3,4,5,6,7,8,9},
+xticklabels={
+  \(\displaystyle {0}\),
+  \(\displaystyle {1}\),
+  \(\displaystyle {2}\),
+  \(\displaystyle {3}\),
+  \(\displaystyle {4}\),
+  \(\displaystyle {5}\),
+  \(\displaystyle {6}\),
+  \(\displaystyle {7}\),
+  \(\displaystyle {8}\),
+  \(\displaystyle {9}\)
+},
+y grid style={darkgray176},
+ylabel={\(\displaystyle L\)\textsubscript{\(\displaystyle \infty\)} margin},
+ymin=-0.0227020550800184, ymax=0.564785483764178,
+ytick style={color=black},
+ytick={-0.1,0,0.1,0.2,0.3,0.4,0.5,0.6},
+yticklabels={
+  \(\displaystyle {\ensuremath{-}0.1}\),
+  \(\displaystyle {0.0}\),
+  \(\displaystyle {0.1}\),
+  \(\displaystyle {0.2}\),
+  \(\displaystyle {0.3}\),
+  \(\displaystyle {0.4}\),
+  \(\displaystyle {0.5}\),
+  \(\displaystyle {0.6}\)
+}
+]
+\addplot [semithick, steelblue55126184]
+table {%
+1 0.213907175062569
+2 0.0609001068773026
+3 0.0279035920203763
+4 0.0158668776064003
+5 0.0102028963503835
+6 0.00710166063592266
+7 0.00522374392980207
+8 0.00400192395835414
+};
+\addlegendentry{1-GDP approx.}
+\addplot [semithick, darkorange2551270, dash pattern=on 1pt off 1pt]
+table {%
+1 0.345648091891295
+2 0.106222644313126
+3 0.0489408310850559
+4 0.0285665440776899
+5 0.018538662308023
+6 0.0131376035428312
+7 0.00972554843398643
+8 0.00748618022195646
+};
+\addlegendentry{2-comp.}
+\addplot [semithick, mediumseagreen7717574, dash pattern=on 1pt off 1pt]
+table {%
+1 0.437522279829448
+2 0.143536079298056
+3 0.0703413169722261
+4 0.0414011640477551
+5 0.0272993155140844
+6 0.0193446524872188
+7 0.0144271823497673
+8 0.0111551164955098
+};
+\addlegendentry{3-comp.}
+\addplot [semithick, hotpink247129191, dash pattern=on 1pt off 1pt]
+table {%
+1 0.50920792732483
+2 0.183863139222427
+3 0.0913142655545564
+4 0.0544691988055435
+5 0.0360811558718556
+6 0.0256328976453284
+7 0.019139640731474
+8 0.0148237831945818
+};
+\addlegendentry{4-comp.}
+\addplot [semithick, sienna1668640, dash pattern=on 1pt off 1pt]
+table {%
+1 0.538081504725805
+2 0.219522841302784
+3 0.111694388751776
+4 0.0673812447445267
+5 0.0448296997274277
+6 0.0319160766322184
+7 0.0238530617805564
+8 0.0184907619160731
+};
+\addlegendentry{5-comp.}
+\end{axis}
+
+\end{tikzpicture}

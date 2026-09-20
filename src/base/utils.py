@@ -121,7 +121,7 @@ def plot_multiple_functions(
         plt.legend()
 
     if save_to is not None:
-        plt.savefig(title_to_asset(save_to), bbox_inches='tight',pad_inches = 0)
+        plt.savefig(title_to_asset(save_to), bbox_inches='tight', pad_inches = 0)
         m2t.save(title_to_asset(save_to, ".tex", _PLOTS_FOLDER + "tikz/"),
                  axis_width=_figsize_to_tikz_size(_FIGSIZE[0]),
                  axis_height=_figsize_to_tikz_size(_FIGSIZE[1]),

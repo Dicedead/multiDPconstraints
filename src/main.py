@@ -1,6 +1,3 @@
-import matplotlib.pyplot as plt
-import numpy as np
-
 from base.imports import *
 from itertools import chain
 
@@ -1380,59 +1377,109 @@ def composition_improves_as_n_increases(k, eps_ls, delta_ls, title="composition_
         save_to=title
     )
 
-def approx_gaussian_improves_as_n_increases(mu, k, n_max, title):
-
+def approx_gaussian_improves_as_n_increases(mu, k_s, n_max, title):
     g_mu = GaussianTradeoff(mu)
-    g_mu_k_comp = GaussianTradeoff(mu * np.sqrt(k))
-
     n_ls = range(1,n_max+1)
 
     linf_below_apps = [
         linf_multi_dp_approx_below(g_mu, n) for n in n_ls
     ]
-    linf_below_comps = [
-        privacy_region_composition_multi_dp(
-            app.get_eps_list(),
-            app.get_delta_list(),
-            k
-        ) for app in linf_below_apps
-    ]
-
     linf_above_apps = [
         linf_multi_dp_approx_above(g_mu, n) for n in n_ls
     ]
-    linf_above_comps = [
-        privacy_region_composition_multi_dp(
-            app.get_eps_list(),
-            app.get_delta_list(),
-            k
-        ) for app in linf_above_apps
+
+    errors_approx = np.array([
+        linf_distance(app_l, app_u) for app_l, app_u in zip(linf_below_apps, linf_above_apps)
+    ])
+
+    ax = plt.figure().gca()
+    ax.xaxis.set_major_locator(tck.MaxNLocator(integer=True))
+
+    plt.xlabel("Number of DP constraints")
+    plt.ylabel(r"$L$\textsubscript{$\infty$} margin")
+
+    plt.plot(n_ls, errors_approx, label=f"{mu}-GDP approx.", linestyle="solid", color=COLOR_1)
+
+    for i, k in enumerate(k_s):
+        linf_below_comps = [
+            privacy_region_composition_multi_dp(
+                app.get_eps_list(),
+                app.get_delta_list(),
+                k
+            ) for app in linf_below_apps
+        ]
+
+        linf_above_comps = [
+            privacy_region_composition_multi_dp(
+                app.get_eps_list(),
+                app.get_delta_list(),
+                k
+            ) for app in linf_above_apps
+        ]
+
+        errors_comps = np.array([
+            linf_distance(comp_l, comp_u) for comp_l, comp_u in zip(linf_below_comps, linf_above_comps)
+        ])
+
+        plt.plot(n_ls, errors_comps, label=f"{k}-comp.", linestyle=dotted_custom, color=COLOR_PALETTE[i+1])
+
+    plt.legend()
+    plt.savefig("../plots/" + title + ".png", bbox_inches='tight', pad_inches = 0)
+    m2t.save("../plots/tikz/" + title + ".tex")
+
+    plt.close()
+
+def approx_laplace_improves_as_n_increases(eps, k_s, n_max, title):
+    g_mu = LaplaceTradeoff(eps)
+    n_ls = range(1,n_max+1)
+
+    linf_below_apps = [
+        linf_multi_dp_approx_below(g_mu, n) for n in n_ls
+    ]
+    linf_above_apps = [
+        linf_multi_dp_approx_above(g_mu, n) for n in n_ls
     ]
 
-    errors_approx_below = np.array([
-        linf_distance(g_mu, app) for app in linf_below_apps
+    errors_approx = np.array([
+        linf_distance(app_l, app_u) for app_l, app_u in zip(linf_below_apps, linf_above_apps)
     ])
 
-    errors_comps_below = np.array([
-        linf_distance(g_mu_k_comp, comp) for comp in linf_below_comps
-    ])
+    ax = plt.figure().gca()
+    ax.xaxis.set_major_locator(tck.MaxNLocator(integer=True))
 
-    errors_approx_above = np.array([
-        linf_distance(g_mu, app) for app in linf_above_apps
-    ])
+    plt.xlabel("Number of DP constraints")
+    plt.ylabel(r"$L$\textsubscript{$\infty$} margin")
 
-    errors_comps_above = np.array([
-        linf_distance(g_mu_k_comp, comp) for comp in linf_above_comps
-    ])
+    plt.plot(n_ls, errors_approx, label=f"Lap({eps})-DP approx.", linestyle="solid", color=COLOR_1)
 
-    # TODO add labels, adapt colors, linestyles, ensure single ticks
-    plt.plot(n_ls, errors_approx_above)
-    plt.plot(n_ls, errors_approx_below)
-    plt.plot(n_ls, errors_comps_above)
-    plt.plot(n_ls, errors_comps_below)
-    plt.legend(["$L_\\infty$ approx. above", "$L_\\infty$ approx. below", "$L_\\infty$ comp. above", "$L_\\infty$ comp. below"])
-    plt.show()
+    for i, k in enumerate(k_s):
+        linf_below_comps = [
+            privacy_region_composition_multi_dp(
+                app.get_eps_list(),
+                app.get_delta_list(),
+                k
+            ) for app in linf_below_apps
+        ]
 
+        linf_above_comps = [
+            privacy_region_composition_multi_dp(
+                app.get_eps_list(),
+                app.get_delta_list(),
+                k
+            ) for app in linf_above_apps
+        ]
+
+        errors_comps = np.array([
+            linf_distance(comp_l, comp_u) for comp_l, comp_u in zip(linf_below_comps, linf_above_comps)
+        ])
+
+        plt.plot(n_ls, errors_comps, label=f"{k}-comp.", linestyle=dotted_custom, color=COLOR_PALETTE[i+1])
+
+    plt.legend()
+    plt.savefig("../plots/" + title + ".png", bbox_inches='tight', pad_inches = 0)
+    m2t.save("../plots/tikz/" + title + ".tex")
+
+    plt.close()
 
 if __name__ == "__main__":
     # subs_laplace_vs_gaussian_composition_comparison(n=3, k=15, eps=1.2, mu=1, p=0.1)
@@ -1444,4 +1491,5 @@ if __name__ == "__main__":
     # main_theorem_comparison_two_ks(eps_1=0.3, delta_1=0.0, eps_2=0.15, delta_2=0.02, k1=3, k2=20, title="theorem_1_comparison_two_ks_small_region")
     # gaussian_compos_approx_tradeoff_and_multi_compos(mu=1., n=4, k_ls=[3, 10], title="gaussian_compos_approx_multi_k")
     # laplace_compos_approx_tradeoff_and_multi_compos(eps=1., n=4, k_ls=[3, 10], title="laplace_compos_approx_multi_k")
-    approx_gaussian_improves_as_n_increases(1, 3, 7, "Error as n increases")
+    # approx_gaussian_improves_as_n_increases(1, [2, 3, 4, 5], 8, "error_n_increases_gaussian")
+    approx_laplace_improves_as_n_increases(1.2, [2, 3, 4, 5], 8, "error_n_increases_laplace")
