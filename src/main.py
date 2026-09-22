@@ -10,7 +10,7 @@ from f_dp_approximation.smooth_approximation.gaussian_tradeoff import GaussianTr
 from f_dp_approximation.smooth_approximation.laplace_tradeoff import LaplaceTradeoff
 from f_dp_approximation.smooth_approximation.vmf_tradeoff import VonMisesFisherTradeoff
 from main_theorems.heterogeneous_composition_paper import heter_comp_generalized
-from main_theorems.heterogeneous_version import privacy_region_composition_double_dp_heterogeneous_comp, \
+from main_theorems.main_results import privacy_region_composition_double_dp_heterogeneous_comp, \
     privacy_region_composition_heterogeneous_two_constraints, privacy_region_composition_multi_dp
 from main_theorems.other_composition_theorems import (privacy_region_composition_exact, tv_of_eps_delta,
                                                       privacy_region_dp_composition_total_var,
@@ -1491,5 +1491,4 @@ if __name__ == "__main__":
     # main_theorem_comparison_two_ks(eps_1=0.3, delta_1=0.0, eps_2=0.15, delta_2=0.02, k1=3, k2=20, title="theorem_1_comparison_two_ks_small_region")
     # gaussian_compos_approx_tradeoff_and_multi_compos(mu=1., n=4, k_ls=[3, 10], title="gaussian_compos_approx_multi_k")
     # laplace_compos_approx_tradeoff_and_multi_compos(eps=1., n=4, k_ls=[3, 10], title="laplace_compos_approx_multi_k")
-    # approx_gaussian_improves_as_n_increases(1, [2, 3, 4, 5], 8, "error_n_increases_gaussian")
-    approx_laplace_improves_as_n_increases(1.2, [2, 3, 4, 5], 8, "error_n_increases_laplace")
+    approx_gaussian_improves_as_n_increases(1, [2, 3, 4, 5], 8, "error_n_increases_gaussian")
