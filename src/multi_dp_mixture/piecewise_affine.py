@@ -113,8 +113,8 @@ class PiecewiseAffine(RealFunction):
         for idx, t_i in enumerate(breakpoints):
             new_intercepts[idx] = -self(np.r_[t_i])
 
-        domain_start = -np.Infinity if self._bounded_domain else self._slopes[0]
-        domain_end = np.Infinity if self._bounded_domain else self._slopes[-1]
+        domain_start = -np.inf if self._bounded_domain else self._slopes[0]
+        domain_end = np.inf if self._bounded_domain else self._slopes[-1]
 
         return PiecewiseAffine(
             breakpoints,
@@ -167,8 +167,8 @@ class PiecewiseAffine(RealFunction):
         return PiecewiseAffine(
             new_slopes,
             new_intercepts,
-            domain_start=-np.infty if not bounded else max(self._domain_start, other._domain_start),
-            domain_end=np.infty if not bounded else min(self._domain_end, other._domain_end),
+            domain_start=-np.inf if not bounded else max(self._domain_start, other._domain_start),
+            domain_end=np.inf if not bounded else min(self._domain_end, other._domain_end),
             bounded=bounded
         )
 

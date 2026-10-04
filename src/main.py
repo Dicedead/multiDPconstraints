@@ -1100,14 +1100,14 @@ def gaussian_tradeoff_approx_multip_norms(n, k, mu=1., title="gaussian_tradeoff_
         ],
         [
             f"Gaussian({mu})-DP",
-            f"$L_1$ {n}-DP app. below",
-            f"$L_1$ {n}-DP app. above",
-            f"$L_\\infty$ {n}-DP app. below",
-            f"$L_\\infty$ {n}-DP app. above",
-            f"$L_1$ {k}-comp. app. below",
-            f"$L_1$ {k}-comp. app. above",
-            f"$L_\\infty$ {k}-comp. app. below",
-            f"$L_\\infty$ {k}-comp. app. above",
+            f"$L_1$ {n}-DP approx.",
+            None, #f"$L_1$ {n}-DP app. above",
+            f"$L_\\infty$ {n}-DP approx.",
+            None, #f"$L_\\infty$ {n}-DP app. above",
+            f"$L_1$ {k}-composition approx.",
+            None, #f"$L_1$ {k}-comp. app. above",
+            f"$L_\\infty$ {k}-composition approx.",
+            None, #f"$L_\\infty$ {k}-comp. app. above",
         ],
         [
             "solid",
@@ -1396,7 +1396,7 @@ def approx_gaussian_improves_as_n_increases(mu, k_s, n_max, title):
     ax.xaxis.set_major_locator(tck.MaxNLocator(integer=True))
 
     plt.xlabel("Number of DP constraints")
-    plt.ylabel(r"$L$\textsubscript{$\infty$} margin")
+    plt.ylabel(r"$L$\textsubscript{$\infty$} lower and upper bound gap")
 
     plt.plot(n_ls, errors_approx, label=f"{mu}-GDP approx.", linestyle="solid", color=COLOR_1)
 
@@ -1421,7 +1421,7 @@ def approx_gaussian_improves_as_n_increases(mu, k_s, n_max, title):
             linf_distance(comp_l, comp_u) for comp_l, comp_u in zip(linf_below_comps, linf_above_comps)
         ])
 
-        plt.plot(n_ls, errors_comps, label=f"{k}-comp.", linestyle=dotted_custom, color=COLOR_PALETTE[i+1])
+        plt.plot(n_ls, errors_comps, label=f"{k}-composition", linestyle=dotted_custom, color=COLOR_PALETTE[i+1])
 
     plt.legend()
     plt.savefig("../plots/" + title + ".png", bbox_inches='tight', pad_inches = 0)
@@ -1448,7 +1448,7 @@ def approx_laplace_improves_as_n_increases(eps, k_s, n_max, title):
     ax.xaxis.set_major_locator(tck.MaxNLocator(integer=True))
 
     plt.xlabel("Number of DP constraints")
-    plt.ylabel(r"$L$\textsubscript{$\infty$} margin")
+    plt.ylabel(r"$L$\textsubscript{$\infty$} lower and upper bound gap")
 
     plt.plot(n_ls, errors_approx, label=f"Lap({eps})-DP approx.", linestyle="solid", color=COLOR_1)
 
@@ -1473,7 +1473,7 @@ def approx_laplace_improves_as_n_increases(eps, k_s, n_max, title):
             linf_distance(comp_l, comp_u) for comp_l, comp_u in zip(linf_below_comps, linf_above_comps)
         ])
 
-        plt.plot(n_ls, errors_comps, label=f"{k}-comp.", linestyle=dotted_custom, color=COLOR_PALETTE[i+1])
+        plt.plot(n_ls, errors_comps, label=f"{k}-composition", linestyle=dotted_custom, color=COLOR_PALETTE[i+1])
 
     plt.legend()
     plt.savefig("../plots/" + title + ".png", bbox_inches='tight', pad_inches = 0)
@@ -1488,7 +1488,9 @@ if __name__ == "__main__":
     # mixture_example(alpha_1 = 0.5, eps_1 = 1.3, delta_1 = 0.0, eps_2 = 0.5, delta_2 = 0.2, title="mixture_example")
     # laplace_tradeoff_approx_multip_norms(3, 10, eps=0.7)
     # gaussian_tradeoff_approx_multip_norms(3, 10, mu=0.5)
+    gaussian_tradeoff_approx_multip_norms(2, 10, mu=0.5, title="gaussian_tradeoff_approx_multip_norms_smallmu")
+    gaussian_tradeoff_approx_multip_norms(2, 10, mu=1, title="gaussian_tradeoff_approx_multip_norms_bigmu")
     # main_theorem_comparison_two_ks(eps_1=0.3, delta_1=0.0, eps_2=0.15, delta_2=0.02, k1=3, k2=20, title="theorem_1_comparison_two_ks_small_region")
     # gaussian_compos_approx_tradeoff_and_multi_compos(mu=1., n=4, k_ls=[3, 10], title="gaussian_compos_approx_multi_k")
     # laplace_compos_approx_tradeoff_and_multi_compos(eps=1., n=4, k_ls=[3, 10], title="laplace_compos_approx_multi_k")
-    approx_gaussian_improves_as_n_increases(1, [2, 3, 4, 5], 8, "error_n_increases_gaussian")
+    # approx_gaussian_improves_as_n_increases(1, [2, 3, 4, 5], 8, "error_n_increases_gaussian")
