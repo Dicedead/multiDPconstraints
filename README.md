@@ -1,10 +1,10 @@
-# Composition Theorems for Multiple Differential Privacy Constraints
+# Hypothesis Testing Methods for Differential Privacy Composition
 
-This repository contains the code for the paper _Composition Theorems for Multiple Differential Privacy Constraints_ (Cemre Çadir, Salim Najib, and Yanina Y. Shkel).
+This repository contains the code for the paper _Hypothesis Testing Methods for Differential Privacy Composition_ (Cemre Çadir, Salim Najib, and Yanina Y. Shkel).
 
-The _main_ branch corresponds to the journal version, and the [_isit_ branch](https://github.com/Dicedead/multiDPconstraints/tree/isit) to the conference version, which can be found [here](https://ieeexplore.ieee.org/document/11653633).
+The _main_ branch corresponds to the journal version, and the [_isit_ branch](https://github.com/Dicedead/multiDPconstraints/tree/isit) to the conference version, which can be found [here](https://ieeexplore.ieee.org/document/11653633) under a different title.
 
-For usage examples, refer to ```main.py``` that contains the code producing the paper's plots.
+For usage examples, refer to ```main.py``` that contains the code producing the paper's plots. Simply run it to recreate them.
 
 ---
 
