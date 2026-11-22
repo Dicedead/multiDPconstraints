@@ -144,22 +144,52 @@ def l1_multi_dp_approx_below(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeo
     """
     assert n >= 1
 
-    u = __lower_approx_midpoint_sum(f, n)
-    u = np.array(sorted(np.unique(u)))
+    c_fixed = f.fixed_point()
+    f_prime_func = f.subgradient
 
-    slopes = np.zeros(len(u) - 1)
-    offsets = np.zeros(len(u) - 1)
-    g = f.normal_rotation()
+    def objective(P):
+        subgrads = np.array([f_prime_func(t) for t in P])
+        d_offsets = np.array([f(t) - subgrads[i] * t for i, t in enumerate(P)])
 
-    i = 1
-    while i < len(u):
-        avg = (u[i] + u[i - 1]) / 2
-        slope = g.subgradient(avg)
-        offset = g(avg) - slope * avg
+        x_points = np.zeros(n)
+        for i in range(n - 1):
+            if abs(subgrads[i] - subgrads[i + 1]) < SMALL_TOL:
+                x_points[i] = P[i] # if slopes too similar
+            else:
+                x_points[i] = (d_offsets[i + 1] - d_offsets[i]) / (subgrads[i] - subgrads[i + 1])
 
-        slopes[i-1], offsets[i-1] = NormalRotation.slope_offset_rotation_inversion(slope, offset)
-        i += 1
-    return MultiEpsDeltaTradeoff.from_slopes_and_offsets(*keep_useful_lines(slopes, offsets))
+        if abs(subgrads[-1] - 1.0) < SMALL_TOL:
+            x_points[-1] = 0.0
+        else:
+            x_points[-1] = d_offsets[-1] / (1.0 - subgrads[-1])
+
+        area = x_points[-1] * d_offsets[-1]
+        for i in range(n - 1):
+            area += x_points[i] * (d_offsets[i] - d_offsets[i + 1])
+
+        return -area
+
+    def constraints(P):
+        cons = []
+        cons.append(P[0] - TOL) # 0 <= t_1
+        for i in range(n - 1):
+            cons.append(P[i + 1] - P[i] - TOL) # t_i <= t_{i+1}
+        cons.append(c_fixed - P[-1] - TOL) # t_n <= c
+        return np.array(cons)
+
+    P_init = np.linspace(0, c_fixed, n + 2)[1:-1]
+
+    res = spo.minimize(
+        objective, P_init, method='SLSQP',
+        constraints={'type': 'ineq', 'fun': constraints},
+        options={'disp': False, 'ftol': 1e-8, 'maxiter': 500}
+    )
+
+    P_star = res.x
+    slopes = [f_prime_func(t) for t in P_star]
+    intercepts = [f(t) - m * t for t, m in zip(P_star, slopes)]
+
+    return MultiEpsDeltaTradeoff.from_slopes_and_offsets(*keep_useful_lines(slopes, intercepts))
 
 
 def l1_multi_dp_approx_above(f: TradeOffFunction, n: int) -> MultiEpsDeltaTradeoff:
